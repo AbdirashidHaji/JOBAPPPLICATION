@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "757936900622",
+    "project_id": "ist-job-portal",
+    "storage_bucket": "ist-job-portal.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:757936900622:android:a348d2bf8f2d7687974a5f",
+        "android_client_info": {
+          "package_name": "com.example.istjobportal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdJ1yaH4OqjjUqfsuKSYHjkYfDuhD6asU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
