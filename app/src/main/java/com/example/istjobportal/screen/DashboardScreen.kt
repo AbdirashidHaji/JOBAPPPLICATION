@@ -32,10 +32,48 @@ fun DashboardScreen(navController: NavController) {
     ) {
         // Welcome Header
         Text(
-            text = "Welcome to IST Job Portal",
+            text = "Welcome to Job Portal",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // User Profile Section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Profile Image
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary)
+            ) {
+                // Placeholder for profile image
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // User Info
+            Column {
+                Text(
+                    text = "User Name",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = "View Profile",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { /* Navigate to Profile Screen */ }
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -73,23 +111,26 @@ fun DashboardScreen(navController: NavController) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             ProfileHighlight(
                 title = "Applied Jobs",
                 count = 8,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
+                onClick = { /* Navigate to Applied Jobs Screen */ }
             )
             ProfileHighlight(
                 title = "Saved Jobs",
                 count = 15,
-                color = MaterialTheme.colorScheme.tertiary
+                color = MaterialTheme.colorScheme.tertiary,
+                onClick = { /* Navigate to Saved Jobs Screen */ }
             )
             ProfileHighlight(
                 title = "Notifications",
                 count = 3,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                onClick = { /* Navigate to Notifications Screen */ }
             )
         }
 
@@ -126,9 +167,10 @@ fun DashboardScreen(navController: NavController) {
 }
 
 @Composable
-fun ProfileHighlight(title: String, count: Int, color: Color) {
+fun ProfileHighlight(title: String, count: Int, color: Color, onClick: () -> Unit) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
         Text(
             text = count.toString(),

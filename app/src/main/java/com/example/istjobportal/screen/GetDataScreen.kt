@@ -30,10 +30,9 @@ import com.example.istjobportal.utils.SharedViewModel
 import com.example.istjobportal.utils.UserData
 
 @Composable
-fun GetDataScreen(navController: NavController, SharedViewModel : SharedViewModel)
-{
+fun GetDataScreen(navController: NavController, sharedViewModel: SharedViewModel) {
     var userID: String by remember { mutableStateOf("") }
-    var  username: String by remember { mutableStateOf("") }
+    var username: String by remember { mutableStateOf("") }
     var profession: String by remember { mutableStateOf("") }
     var age: String by remember { mutableStateOf("") }
     var ageInt: Int by remember { mutableStateOf(0) }
@@ -160,19 +159,15 @@ fun GetDataScreen(navController: NavController, SharedViewModel : SharedViewMode
                     .padding(top = 20.dp)
                     .fillMaxWidth(),
                 onClick = {
-
                     sharedViewModel.deleteData(
                         userID = userID,
                         context = context,
                         navController = navController
                     )
-
-                }) {
+                }
+            ) {
                 Text(text = "Delete")
-
             }
-
-
         }
     }
 }

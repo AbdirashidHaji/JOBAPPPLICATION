@@ -29,8 +29,7 @@ import com.example.istjobportal.utils.SharedViewModel
 import com.example.istjobportal.utils.UserData
 
 @Composable
-fun AddDataScreen(navController: NavController, SharedViewModel : SharedViewModel
-                  ){
+fun AddDataScreen(navController: NavController, sharedViewModel: SharedViewModel) {
 
     var userID: String by remember { mutableStateOf("") }
     var username: String by remember { mutableStateOf("") }
@@ -109,8 +108,7 @@ fun AddDataScreen(navController: NavController, SharedViewModel : SharedViewMode
                 label = {
                     Text(text = "Age")
                 },
-                keyboardOptions = KeyboardOptions(keyboardType =
-                KeyboardType.Number)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
             // save Button
             Button(

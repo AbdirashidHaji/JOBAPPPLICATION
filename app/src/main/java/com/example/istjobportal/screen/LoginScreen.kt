@@ -40,8 +40,8 @@ import com.google.firebase.auth.FirebaseUser
 @Composable
 fun LoginScreen(navController: NavController){
 
-    // Initialize Firebase auth
-    val auth = FirebaseAuth.getInstance()
+// Initialize Firebase Auth
+    auth = FirebaseAuth.getInstance()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -61,11 +61,11 @@ fun LoginScreen(navController: NavController){
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(8.dp)
         ) {
-            Column (
+            Column(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),
-                horizontalAlignment = CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Login",
@@ -76,13 +76,19 @@ fun LoginScreen(navController: NavController){
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Image(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(56.dp)),
-                    painter = painterResource(R.drawable.ic_launcher_foreground),
-                    contentDescription ="Login"
-                )
+//                Icon(
+//                    imageVector = Icons.Default.Person,
+//                    contentDescription = "Login Avatar",
+//                    modifier = Modifier.size(104.dp),
+//                    tint = Color.Gray
+//                )
+
+                Image( modifier = Modifier
+                    .size(100.dp) // Adjust the size as needed
+                    .clip(RoundedCornerShape(56.dp)),
+
+
+                    painter = painterResource(R.drawable.login), contentDescription ="Login" )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -113,11 +119,12 @@ fun LoginScreen(navController: NavController){
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
                     onClick = {
-                        signUp(auth, email, password, { user ->
+                        signUp(email, password, { user ->
                             successMessage = "Welcome ${user?.email}"
+                            // Navigate to DashboardScreen on successful sign up
+                            navController.navigate(Screens.DashboardScreen.route)
                         }, { error ->
                             errorMessage = error
                         })
@@ -127,14 +134,15 @@ fun LoginScreen(navController: NavController){
                     Text("Sign In")
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
 
+                Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { navController.navigate(Screens.SignupScreen.route) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Don't have an account? Sign Up")
                 }
+
 
                 // Display error or success message
                 errorMessage?.let {
@@ -157,18 +165,22 @@ fun LoginScreen(navController: NavController){
     }
 }
 
-private fun signUp(auth: FirebaseAuth, email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
+private fun signUp(email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
     auth.signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = auth.currentUser
-                // Check if Email has been verified
-                if (user != null && user.isEmailVerified) {
+                //Check  if  Email has been verifieed
+                if(user!=null && user.isEmailVerified){
+
+//                    onSuccess(auth.currentUser)
                     onSuccess(user)
-                } else {
+
+                } else{
                     auth.signOut()
                     onFailure("Please verify your email first")
                 }
+
             } else {
                 onFailure(task.exception?.message ?: "Sign in failed")
             }
