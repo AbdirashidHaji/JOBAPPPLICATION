@@ -11,6 +11,7 @@ import com.example.istjobportal.screen.SignupScreen
 import com.example.istjobportal.screen.DashboardScreen
 import com.example.istjobportal.screen.GetDataScreen
 import com.example.istjobportal.screen.MainScreen
+import com.example.istjobportal.screen.ProfileScreen
 import com.example.istjobportal.utils.SharedViewModel
 
 @Composable
@@ -36,6 +37,12 @@ fun NavGraph(
             route = Screens.SignupScreen.route
         ) {
             SignupScreen(navController = navController)
+        }
+        //profile
+        composable(
+            route = Screens.ProfileScreen.route
+        ){
+            ProfileScreen(navController = navController)
         }
 
 //        dashboard

@@ -30,6 +30,13 @@ fun MainScreen(navController: NavController){
         ) {
             Text(text = "Dashboard")
         }
+        // Button to navigate to Get Data Screen
+        Button(
+            onClick = { navController.navigate(Screens.GetDataScreen.route) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Create User Data")
+        }
 
     }
 }

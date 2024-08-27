@@ -1,207 +1,185 @@
 package com.example.istjobportal.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.istjobportal.R
+import com.example.istjobportal.nav.Screens
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(navController: NavController) {
-    val searchQuery = remember { mutableStateOf(TextFieldValue("")) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Welcome Header
-        Text(
-            text = "Welcome to Job Portal",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // User Profile Section
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Profile Image
-            Box(
-                modifier = Modifier
-                    .size(50.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            ) {
-                // Placeholder for profile image
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // User Info
-            Column {
-                Text(
-                    text = "User Name",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
-                Text(
-                    text = "View Profile",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { /* Navigate to Profile Screen */ }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Search Bar
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            BasicTextField(
-                value = searchQuery.value,
-                onValueChange = { searchQuery.value = it },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                singleLine = true
-            ) {
-                if (searchQuery.value.text.isEmpty()) {
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxSize(),
+                    verticalArrangement = Arrangement.Top
+                ) {
                     Text(
-                        text = "Search for jobs...",
-                        color = Color.Gray,
-                        fontSize = 18.sp
+                        text = "Menu",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
-                } else {
-                    it()
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Navigation options
+                    TextButton(text = "Home", onClick = {
+                        scope.launch {
+                            drawerState.close()
+                        }
+                        navController.navigate(Screens.MainScreen.route)
+                    })
+                    TextButton(text = "Profile", onClick = {
+                        scope.launch {
+                            drawerState.close()
+                        }
+                        // Add navigation logic for Profile screen
+                    })
+                    TextButton(text = "Settings", onClick = {
+                        scope.launch {
+                            drawerState.close()
+                        }
+                        // Add navigation logic for Settings screen
+                    })
+                }
+            }
+        },
+        content = {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text("IST JOB PORTAL") },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Hamburger Menu")
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White
+                        )
+                    )
+                }
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    // Hotel logo
+                    Image(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape),
+                        painter = painterResource(R.drawable.ist_logo),
+                        contentDescription = "ist"
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Cards layout
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        DashboardCard(title = "Today's Jobs", content = "30 Jobs Added")
+                        DashboardCard(title = "Recent Applications", content = "15 Applications Received Today")
+                        DashboardCard(title = "Pending Approvals", content = "8 Job Applications Pending Approval")
+                        DashboardCard(title = "Active Listings", content = "12 Job Listings Currently Active")
+                        DashboardCard(title = "Closed Listings", content = "5 Job Listings Closed Recently")
+                        DashboardCard(title = "New Messages", content = "3 New Messages from Employers")
+                        DashboardCard(title = "User Activity", content = "120 Users Logged In Today")
+                        DashboardCard(title = "Upcoming Deadlines", content = "4 Job Listings Expiring Soon")
+                    }
+
+                    Spacer(modifier = Modifier.height(30.dp))
+
+                    // Navigate back to main screen
+                    Button(onClick = { navController.navigate(Screens.MainScreen.route) }) {
+                        Text(text = "Go Back")
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Profile Highlights
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            ProfileHighlight(
-                title = "Applied Jobs",
-                count = 8,
-                color = MaterialTheme.colorScheme.secondary,
-                onClick = { /* Navigate to Applied Jobs Screen */ }
-            )
-            ProfileHighlight(
-                title = "Saved Jobs",
-                count = 15,
-                color = MaterialTheme.colorScheme.tertiary,
-                onClick = { /* Navigate to Saved Jobs Screen */ }
-            )
-            ProfileHighlight(
-                title = "Notifications",
-                count = 3,
-                color = MaterialTheme.colorScheme.error,
-                onClick = { /* Navigate to Notifications Screen */ }
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Recent Job Postings
-        Text(
-            text = "Recent Job Postings",
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Placeholder for Job Postings (replace with actual job data)
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-        ) {
-            repeat(3) { index ->
-                JobPostingCard(
-                    jobTitle = "Software Developer",
-                    companyName = "Company ${index + 1}",
-                    location = "Nairobi, Kenya",
-                    onClick = {
-                        // Navigate to Job Details Screen
-                    }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
-    }
+    )
 }
 
 @Composable
-fun ProfileHighlight(title: String, count: Int, color: Color, onClick: () -> Unit) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable(onClick = onClick)
-    ) {
-        Text(
-            text = count.toString(),
-            style = MaterialTheme.typography.headlineMedium,
-            color = color
-        )
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-@Composable
-fun JobPostingCard(jobTitle: String, companyName: String, location: String, onClick: () -> Unit) {
+fun DashboardCard(title: String, content: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            .padding(8.dp),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .padding(16.dp)
         ) {
-            Text(text = jobTitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-            Text(text = companyName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(text = location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = content,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
+    }
+}
+
+@Composable
+fun TextButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(text = text)
     }
 }
