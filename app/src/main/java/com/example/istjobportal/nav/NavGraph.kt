@@ -9,6 +9,7 @@ import com.example.istjobportal.screen.AddDataScreen
 import com.example.istjobportal.screen.LoginScreen
 import com.example.istjobportal.screen.SignupScreen
 import com.example.istjobportal.screen.DashboardScreen
+import com.example.istjobportal.screen.ForgotPasswordScreen
 import com.example.istjobportal.screen.GetDataScreen
 import com.example.istjobportal.screen.MainScreen
 import com.example.istjobportal.screen.ProfileScreen
@@ -38,6 +39,13 @@ fun NavGraph(
         ) {
             SignupScreen(navController = navController)
         }
+        //forgot password
+        composable(
+            route = Screens.ForgotPasswordScreen.route
+        ){
+            ForgotPasswordScreen(navController = navController)
+        }
+        
         //profile
         composable(
             route = Screens.ProfileScreen.route

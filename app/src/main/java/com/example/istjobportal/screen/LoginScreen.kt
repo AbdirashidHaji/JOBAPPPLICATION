@@ -2,8 +2,10 @@ package com.example.istjobportal.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -29,6 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -38,15 +42,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 @Composable
-fun LoginScreen(navController: NavController){
-
-// Initialize Firebase Auth
-    auth = FirebaseAuth.getInstance()
-
+fun LoginScreen(navController: NavController) {
+    // Initialize Firebase Auth
+    val auth = FirebaseAuth.getInstance()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -76,19 +79,13 @@ fun LoginScreen(navController: NavController){
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-//                Icon(
-//                    imageVector = Icons.Default.Person,
-//                    contentDescription = "Login Avatar",
-//                    modifier = Modifier.size(104.dp),
-//                    tint = Color.Gray
-//                )
-
-                Image( modifier = Modifier
-                    .size(100.dp) // Adjust the size as needed
-                    .clip(RoundedCornerShape(56.dp)),
-
-
-                    painter = painterResource(R.drawable.ist_logo), contentDescription ="Login" )
+                Image(
+                    modifier = Modifier
+                        .size(100.dp) // Adjust the size as needed
+                        .clip(RoundedCornerShape(56.dp)),
+                    painter = painterResource(R.drawable.ist_logo),
+                    contentDescription = "Login"
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -106,24 +103,42 @@ fun LoginScreen(navController: NavController){
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Password") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = passwordVisible,
+                        onCheckedChange = { passwordVisible = it }
+                    )
+                    Text(
+                        text = if (passwordVisible) "Hide Password" else "Show Password"
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "Forgot Password?",
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable {
+                        navController.navigate(Screens.ForgotPasswordScreen.route)
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Button(
                     onClick = {
-                        signUp(email, password, { user ->
+                        signIn(email, password, { user ->
                             successMessage = "Welcome ${user?.email}"
-                            // Navigate to DashboardScreen on successful sign up
+                            // Navigate to DashboardScreen on successful login
                             navController.navigate(Screens.DashboardScreen.route)
                         }, { error ->
                             errorMessage = error
@@ -134,15 +149,14 @@ fun LoginScreen(navController: NavController){
                     Text("Sign In")
                 }
 
-
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Button(
                     onClick = { navController.navigate(Screens.SignupScreen.route) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Don't have an account? Sign Up")
                 }
-
 
                 // Display error or success message
                 errorMessage?.let {
@@ -165,22 +179,17 @@ fun LoginScreen(navController: NavController){
     }
 }
 
-private fun signUp(email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
-    auth.signInWithEmailAndPassword(email, password)
+private fun signIn(email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
+    FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val user = auth.currentUser
-                //Check  if  Email has been verifieed
-                if(user!=null && user.isEmailVerified){
-
-//                    onSuccess(auth.currentUser)
+                val user = FirebaseAuth.getInstance().currentUser
+                if (user != null && user.isEmailVerified) {
                     onSuccess(user)
-
-                } else{
-                    auth.signOut()
+                } else {
+                    FirebaseAuth.getInstance().signOut()
                     onFailure("Please verify your email first")
                 }
-
             } else {
                 onFailure(task.exception?.message ?: "Sign in failed")
             }

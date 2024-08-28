@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +14,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -29,26 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Checkbox
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.istjobportal.R
 import com.example.istjobportal.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 
-lateinit var auth: FirebaseAuth
 @Composable
-fun SignupScreen(navController: NavController) {
-    // Initialize Firebase Auth
-    auth = FirebaseAuth.getInstance()
+fun ForgotPasswordScreen(navController: NavController) {
+    val auth = FirebaseAuth.getInstance()
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
@@ -72,7 +62,7 @@ fun SignupScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Create an Account",
+                    text = "Reset Password",
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.headlineMedium,
                     fontSize = 24.sp
@@ -85,7 +75,7 @@ fun SignupScreen(navController: NavController) {
                         .size(100.dp) // Adjust the size as needed
                         .clip(RoundedCornerShape(56.dp)),
                     painter = painterResource(R.drawable.ist_logo),
-                    contentDescription = "Login"
+                    contentDescription = "Reset Password"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -100,66 +90,19 @@ fun SignupScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                TextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    label = { Text("Confirm Password") },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = passwordVisible,
-                        onCheckedChange = { passwordVisible = it }
-                    )
-                    Text(
-                        text = if (passwordVisible) "Hide Password" else "Show Password"
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-//                Text(
-//                    text = "Forgot Password?",
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
                     onClick = {
-                        if (password == confirmPassword) {
-                            signUp(email, password, { user ->
-                                successMessage = "Welcome ${user?.email}"
-                                // Navigate to LoginScreen on successful sign up
-                                navController.navigate(Screens.LoginScreen.route)
-                            }, { error ->
-                                errorMessage = error
-                            })
-                        } else {
-                            errorMessage = "Passwords do not match"
-                        }
+                        sendPasswordResetEmail(email, { message ->
+                            successMessage = message
+                            // Navigate back to login screen
+                            navController.navigate(Screens.LoginScreen.route)
+                        }, { error ->
+                            errorMessage = error
+                        })
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Sign Up")
+                    Text("Send Reset Link")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -168,7 +111,7 @@ fun SignupScreen(navController: NavController) {
                     onClick = { navController.navigate(Screens.LoginScreen.route) },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Already have an account? Login")
+                    Text("Back to Login")
                 }
 
                 // Display error or success message
@@ -192,21 +135,15 @@ fun SignupScreen(navController: NavController) {
     }
 }
 
-private fun signUp(email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
-    auth.createUserWithEmailAndPassword(email, password)
+private fun sendPasswordResetEmail(email: String, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
+    val auth = FirebaseAuth.getInstance()
+    auth.sendPasswordResetEmail(email)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val user = auth.currentUser
-                user?.sendEmailVerification()
-                    ?.addOnCompleteListener { verificationTask ->
-                        if (verificationTask.isSuccessful) {
-                            onSuccess(user)
-                        } else {
-                            onFailure(verificationTask.exception?.message ?: "Verification email failed to send")
-                        }
-                    }
+                onSuccess("Password reset email sent. Please check your inbox.")
             } else {
-                onFailure(task.exception?.message ?: "Sign up failed")
+                onFailure(task.exception?.message ?: "Failed to send reset email")
             }
         }
 }
+
