@@ -76,6 +76,7 @@ fun DashboardScreen(navController: NavController) {
                             drawerState.close()
                         }
                         // Add navigation logic for Profile screen
+                        navController.navigate(Screens.ProfileScreen.route)
                     })
                     TextButton(text = "Settings", onClick = {
                         scope.launch {

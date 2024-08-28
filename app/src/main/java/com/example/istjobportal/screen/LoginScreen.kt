@@ -88,7 +88,7 @@ fun LoginScreen(navController: NavController){
                     .clip(RoundedCornerShape(56.dp)),
 
 
-                    painter = painterResource(R.drawable.login), contentDescription ="Login" )
+                    painter = painterResource(R.drawable.ist_logo), contentDescription ="Login" )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
