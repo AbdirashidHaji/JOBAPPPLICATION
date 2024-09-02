@@ -1,6 +1,7 @@
 package com.example.istjobportal.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -11,8 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -64,26 +71,42 @@ fun DashboardScreen(navController: NavController) {
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Navigation options
-                    TextButton(text = "Home", onClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
+                    // Navigation options with icons
+                    DrawerMenuItem(
+                        text = "Home",
+                        icon = Icons.Filled.Home
+                    ) {
+                        scope.launch { drawerState.close() }
                         navController.navigate(Screens.MainScreen.route)
-                    })
-                    TextButton(text = "Profile", onClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                        // Add navigation logic for Profile screen
+                    }
+                    DrawerMenuItem(
+                        text = "Profile",
+                        icon = Icons.Filled.Person
+                    ) {
+                        scope.launch { drawerState.close() }
                         navController.navigate(Screens.ProfileScreen.route)
-                    })
-                    TextButton(text = "Settings", onClick = {
-                        scope.launch {
-                            drawerState.close()
-                        }
+                    }
+                    DrawerMenuItem(
+                        text = "Settings",
+                        icon = Icons.Filled.Settings
+                    ) {
+                        scope.launch { drawerState.close() }
                         // Add navigation logic for Settings screen
-                    })
+                    }
+                    DrawerMenuItem(
+                        text = "Jobs",
+                        icon = Icons.Filled.Add
+                    ) {
+                        scope.launch { drawerState.close() }
+                        // Add navigation logic for Jobs screen
+                    }
+                    DrawerMenuItem(
+                        text = "Logout",
+                        icon = Icons.Filled.ExitToApp
+                    ) {
+                        scope.launch { drawerState.close() }
+                        // Add logout logic here
+                    }
                 }
             }
         },
@@ -91,7 +114,7 @@ fun DashboardScreen(navController: NavController) {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("IST JOB PORTAL") },
+                        title = { Text("JOB PORTAL") },
                         navigationIcon = {
                             IconButton(onClick = { scope.launch { drawerState.open() } }) {
                                 Icon(Icons.Default.Menu, contentDescription = "Hamburger Menu")
@@ -113,34 +136,45 @@ fun DashboardScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    // Hotel logo
+                    // IST logo
                     Image(
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape),
                         painter = painterResource(R.drawable.ist_logo),
-                        contentDescription = "ist"
+                        contentDescription = "IST Logo"
                     )
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    // Cards layout
+                    // Cards layout with text and links
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        DashboardCard(title = "Today's Jobs", content = "30 Jobs Added")
-                        DashboardCard(title = "Recent Applications", content = "15 Applications Received Today")
-                        DashboardCard(title = "Pending Approvals", content = "8 Job Applications Pending Approval")
-                        DashboardCard(title = "Active Listings", content = "12 Job Listings Currently Active")
-                        DashboardCard(title = "Closed Listings", content = "5 Job Listings Closed Recently")
-                        DashboardCard(title = "New Messages", content = "3 New Messages from Employers")
-                        DashboardCard(title = "User Activity", content = "120 Users Logged In Today")
-                        DashboardCard(title = "Upcoming Deadlines", content = "4 Job Listings Expiring Soon")
+                        DashboardCard(
+                            title = "Today's Jobs",
+                            content = "30 Jobs Added",
+                            onClick = { navController.navigate(Screens.JobScreen.route) }
+                        )
+                        DashboardCard(
+                            title = "Recent Applications",
+                            content = "15 Applications Received Today",
+                            onClick = { navController.navigate(Screens.ApplicationsScreen.route) }
+                        )
+                        DashboardCard(
+                            title = "Pending Approvals",
+                            content = "8 Job Applications Pending Approval",
+                            onClick = { navController.navigate(Screens.PendingApprovalsScreen.route) }
+                        )
+                        // Add more cards as needed
                     }
 
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // Navigate back to main screen
-                    Button(onClick = { navController.navigate(Screens.MainScreen.route) }) {
+                    Button(
+                        onClick = { navController.navigate(Screens.MainScreen.route) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(text = "Go Back")
                     }
                 }
@@ -150,17 +184,39 @@ fun DashboardScreen(navController: NavController) {
 }
 
 @Composable
-fun DashboardCard(title: String, content: String) {
+fun DrawerMenuItem(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.padding(end = 8.dp))
+        Text(text = text)
+    }
+}
+
+@Composable
+fun DashboardCard(title: String, content: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
+            modifier = Modifier.padding(16.dp)
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.ist_logo), // Replace with relevant image if needed
+                contentDescription = title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp)
+                    .padding(bottom = 8.dp)
+            )
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
@@ -172,15 +228,5 @@ fun DashboardCard(title: String, content: String) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-    }
-}
-
-@Composable
-fun TextButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(text = text)
     }
 }

@@ -9,4 +9,7 @@ sealed class Screens(val route: String){
     data object GetDataScreen:Screens(route = "get_data_screen")
     data object ProfileScreen:Screens(route = "Profile_screen")
     data object ForgotPasswordScreen:Screens(route = "ForgotPassword_screen")
+    data object PendingApprovalsScreen:Screens(route = "PendingApprovals_Screen")
+    data object JobScreen:Screens(route = "job_screen")
+    data object ApplicationsScreen:Screens(route = "Application_Screen")
 }
