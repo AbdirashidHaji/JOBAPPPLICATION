@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import com.example.istjobportal.R
 import com.example.istjobportal.nav.Screens
 import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +78,7 @@ fun DashboardScreen(navController: NavController) {
                         icon = Icons.Filled.Home
                     ) {
                         scope.launch { drawerState.close() }
-                        navController.navigate(Screens.MainScreen.route)
+//                        navController.navigate(Screens.MainScreen.route)
                     }
                     DrawerMenuItem(
                         text = "Profile",
@@ -98,14 +99,14 @@ fun DashboardScreen(navController: NavController) {
                         icon = Icons.Filled.Add
                     ) {
                         scope.launch { drawerState.close() }
-                        // Add navigation logic for Jobs screen
+//                        navController.navigate(Screens.AddJobScreen.route)
                     }
                     DrawerMenuItem(
                         text = "Logout",
                         icon = Icons.Filled.ExitToApp
                     ) {
                         scope.launch { drawerState.close() }
-                        // Add logout logic here
+                        signOutAndNavigate(navController)
                     }
                 }
             }
@@ -153,30 +154,30 @@ fun DashboardScreen(navController: NavController) {
                         DashboardCard(
                             title = "Today's Jobs",
                             content = "30 Jobs Added",
-                            onClick = { navController.navigate(Screens.JobScreen.route) }
+                            onClick = { navController.navigate(Screens.ProfileScreen.route) }
                         )
                         DashboardCard(
                             title = "Recent Applications",
                             content = "15 Applications Received Today",
-                            onClick = { navController.navigate(Screens.ApplicationsScreen.route) }
+                            onClick = { navController.navigate(Screens.ProfileScreen.route) }
                         )
                         DashboardCard(
                             title = "Pending Approvals",
                             content = "8 Job Applications Pending Approval",
-                            onClick = { navController.navigate(Screens.PendingApprovalsScreen.route) }
+                            onClick = { navController.navigate(Screens.ProfileScreen.route) }
                         )
-                        // Add more cards as needed
+
                     }
 
                     Spacer(modifier = Modifier.height(30.dp))
 
                     // Navigate back to main screen
-                    Button(
-                        onClick = { navController.navigate(Screens.MainScreen.route) },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = "Go Back")
-                    }
+//                    Button(
+//                        onClick = { navController.navigate(Screens.MainScreen.route) },
+//                        modifier = Modifier.fillMaxWidth()
+//                    ) {
+//                        Text(text = "Go Back")
+//                    }
                 }
             }
         }
@@ -228,5 +229,12 @@ fun DashboardCard(title: String, content: String, onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+private fun signOutAndNavigate(navController: NavController) {
+    FirebaseAuth.getInstance().signOut()
+    navController.navigate(Screens.LoginScreen.route) {
+        popUpTo(Screens.LoginScreen.route) { inclusive = true}
     }
 }

@@ -2,34 +2,15 @@ package com.example.istjobportal.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.Role.Companion.Checkbox
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -39,12 +20,15 @@ import com.example.istjobportal.R
 import com.example.istjobportal.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 
 lateinit var auth: FirebaseAuth
+
 @Composable
 fun SignupScreen(navController: NavController) {
     // Initialize Firebase Auth
     auth = FirebaseAuth.getInstance()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -82,10 +66,10 @@ fun SignupScreen(navController: NavController) {
 
                 Image(
                     modifier = Modifier
-                        .size(100.dp) // Adjust the size as needed
+                        .size(100.dp)
                         .clip(RoundedCornerShape(56.dp)),
                     painter = painterResource(R.drawable.ist_logo),
-                    contentDescription = "Login"
+                    contentDescription = "IST Logo"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -136,20 +120,12 @@ fun SignupScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-//                Text(
-//                    text = "Forgot Password?",
-//                    color = MaterialTheme.colorScheme.primary
-//                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Button(
                     onClick = {
                         if (password == confirmPassword) {
-                            signUp(email, password, { user ->
+                            signUp(email, password, navController, { user ->
                                 successMessage = "Welcome ${user?.email}"
                                 // Navigate to LoginScreen on successful sign up
-                                navController.navigate(Screens.LoginScreen.route)
                             }, { error ->
                                 errorMessage = error
                             })
@@ -192,20 +168,51 @@ fun SignupScreen(navController: NavController) {
     }
 }
 
-private fun signUp(email: String, password: String, onSuccess: (FirebaseUser?) -> Unit, onFailure: (String) -> Unit) {
+private fun signUp(
+    email: String,
+    password: String,
+    navController: NavController,
+    onSuccess: (FirebaseUser?) -> Unit,
+    onFailure: (String) -> Unit
+) {
     auth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = auth.currentUser
-                user?.sendEmailVerification()
-                    ?.addOnCompleteListener { verificationTask ->
-                        if (verificationTask.isSuccessful) {
-                            onSuccess(user)
-                        } else {
-                            onFailure(verificationTask.exception?.message ?: "Verification email failed to send")
+                user?.let {
+                    // Default role set to "alumni"
+                    val role = "alumni"
+                    val db = FirebaseFirestore.getInstance()
+
+                    // Create a user document with email and role in Firestore
+                    val userDoc = mapOf(
+                        "email" to email,
+                        "role" to role
+                    )
+
+                    db.collection("users").document(user.uid)
+                        .set(userDoc)
+                        .addOnSuccessListener {
+                            // Send verification email
+                            user.sendEmailVerification()
+                                .addOnCompleteListener { verificationTask ->
+                                    if (verificationTask.isSuccessful) {
+                                        // Navigate to Login Screen after successful signup and email verification
+                                        navController.navigate(Screens.LoginScreen.route)
+                                        onSuccess(user)
+                                    } else {
+                                        // Handle verification email failure
+                                        onFailure(verificationTask.exception?.message ?: "Failed to send verification email")
+                                    }
+                                }
                         }
-                    }
+                        .addOnFailureListener { e ->
+                            // Handle Firestore write failure
+                            onFailure(e.message ?: "Failed to save user data")
+                        }
+                }
             } else {
+                // Handle sign up failure
                 onFailure(task.exception?.message ?: "Sign up failed")
             }
         }
