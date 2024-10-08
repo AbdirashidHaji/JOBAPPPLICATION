@@ -11,7 +11,6 @@ android {
     defaultConfig {
         applicationId = "com.example.istjobportal"
         minSdk = 26
-        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -52,13 +51,14 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.firebase.auth.ktx)
+//    implementation(libs.play.services.auth)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(platform(libs.firebase.bom))
-    implementation (libs.coil.compose )
     implementation(libs.firebase.auth)
     implementation(libs.androidx.ui)
     implementation(platform(libs.androidx.compose.bom))
@@ -68,13 +68,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.firebase.database.ktx)
-    implementation (libs.google.firebase.database.ktx)
-    implementation(libs.firebase.storage.ktx)
-    implementation (libs.firebase.storage.ktx)
     implementation(libs.androidx.room.common)
-    implementation(libs.support.annotations)
-    implementation(libs.androidx.media3.common.ktx)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

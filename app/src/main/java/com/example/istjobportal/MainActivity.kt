@@ -25,7 +25,7 @@ import com.google.firebase.auth.FirebaseAuth
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var navController: NavHostController
-    private val sharedViewModel: SharedViewModel by viewModels()
+//    private val sharedViewModel: SharedViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                 ){
               navController = rememberNavController()
                     //calling navGraph
-                    NavGraph(navController = navController, sharedViewModel = sharedViewModel)                }
+                    NavGraph(navController = navController)                }
 
             }
         }

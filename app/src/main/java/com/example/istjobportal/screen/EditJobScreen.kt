@@ -20,14 +20,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.istjobportal.nav.Screens
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun CreateProfileScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var bio by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
+fun EditJobScreen(navController: NavController) {
+    var jobTitle by remember { mutableStateOf("") }
+    var jobDescription by remember { mutableStateOf("") }
     val db = FirebaseFirestore.getInstance()
 
     Column(
@@ -37,18 +35,18 @@ fun CreateProfileScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
+            value = jobTitle,
+            onValueChange = { jobTitle = it },
+            label = { Text("Job Title") },
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextField(
-            value = bio,
-            onValueChange = { bio = it },
-            label = { Text("Bio") },
+            value = jobDescription,
+            onValueChange = { jobDescription = it },
+            label = { Text("Job Description") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -56,31 +54,22 @@ fun CreateProfileScreen(navController: NavController) {
 
         Button(
             onClick = {
-                val profile = hashMapOf(
-                    "name" to name,
-                    "bio" to bio,
-                    "userId" to auth.currentUser?.uid
+                val job = hashMapOf(
+                    "title" to jobTitle,
+                    "description" to jobDescription
                 )
-                db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
+                db.collection("jobs").add(job)
                     .addOnSuccessListener {
-                        Toast.makeText(
-                            navController.context,
-                            "Profile created successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.navigate(Screens.ViewProfileScreen.route)
+                        Toast.makeText(navController.context, "Job edited successfully", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Screens.ManageJobsScreen.route)
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(
-                            navController.context,
-                            "Failed to create profile: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(navController.context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Create Profile")
+            Text("Save Changes")
         }
     }
 }

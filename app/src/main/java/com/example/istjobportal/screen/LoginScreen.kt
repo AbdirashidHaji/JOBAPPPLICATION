@@ -118,12 +118,13 @@ fun LoginScreen(navController: NavController) {
                     onClick = {
                         signIn(email, password, auth, { user ->
                             // Navigate based on the role of the user
-                            fetchUserRoleAndNavigate(
-                                auth,
-                                navController,
-                                { role -> navController.navigate(Screens.DashboardScreen.route + "/$role") },
-                                { navController.navigate(Screens.CreateProfileScreen.route) }
-                            )
+                            if (user != null) {
+                                fetchUserRoleAndNavigate(
+                                    user,
+                                    auth,
+                                    navController
+                                )
+                            }
                         }, { error ->
                             errorMessage = error
                         })
@@ -180,42 +181,39 @@ private fun signIn(
 }
 
 private fun fetchUserRoleAndNavigate(
+    user: FirebaseUser,
     auth: FirebaseAuth,
-    navController: NavController,
-    navigateToDashboard: (String) -> Unit,
-    navigateToCreateProfile: () -> Unit
+    navController: NavController
 ) {
-    val uid = auth.currentUser?.uid
-    if (uid != null) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("users").document(uid).get()
-            .addOnSuccessListener { documentSnapshot ->
-                val role = documentSnapshot.getString("role") ?: "alumni"
-                if (role == "admin") {
-                    navigateToDashboard("admin")
-                } else {
-                    checkIfProfileExists(uid, navController, navigateToDashboard, navigateToCreateProfile)
-                }
+    val uid = user.uid
+    val db = FirebaseFirestore.getInstance()
+
+    db.collection("users").document(uid).get()
+        .addOnSuccessListener { documentSnapshot ->
+            val role = documentSnapshot.getString("role") ?: "alumni"
+            when (role) {
+                "admin" -> navController.navigate(Screens.DashboardScreen.route + "/admin")
+                "alumni" -> checkIfProfileExists(uid, navController)
+                else -> navController.navigate(Screens.CreateProfileScreen.route)
             }
-            .addOnFailureListener { e ->
-                Toast.makeText(navController.context, "Error fetching user role: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-    }
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(navController.context, "Error fetching user role: ${e.message}", Toast.LENGTH_LONG).show()
+        }
 }
 
 private fun checkIfProfileExists(
     uid: String,
-    navController: NavController,
-    navigateToDashboard: (String) -> Unit,
-    navigateToCreateProfile: () -> Unit
+    navController: NavController
 ) {
     val db = FirebaseFirestore.getInstance()
+
     db.collection("alumniProfiles").document(uid).get()
         .addOnSuccessListener { documentSnapshot ->
             if (documentSnapshot.exists()) {
-                navigateToDashboard("alumni")
+                navController.navigate(Screens.DashboardScreen.route + "/alumni")
             } else {
-                navigateToCreateProfile()
+                navController.navigate(Screens.CreateProfileScreen.route)
             }
         }
         .addOnFailureListener { e ->

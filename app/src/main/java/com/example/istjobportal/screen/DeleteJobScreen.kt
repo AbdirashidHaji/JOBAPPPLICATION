@@ -19,15 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.istjobportal.nav.Screens
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun CreateProfileScreen(navController: NavController) {
-    var name by remember { mutableStateOf("") }
-    var bio by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
+fun DeleteJobScreen(navController: NavController) {
+    var jobId by remember { mutableStateOf("") }
     val db = FirebaseFirestore.getInstance()
 
     Column(
@@ -37,18 +33,9 @@ fun CreateProfileScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = bio,
-            onValueChange = { bio = it },
-            label = { Text("Bio") },
+            value = jobId,
+            onValueChange = { jobId = it },
+            label = { Text("Job ID") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -56,31 +43,18 @@ fun CreateProfileScreen(navController: NavController) {
 
         Button(
             onClick = {
-                val profile = hashMapOf(
-                    "name" to name,
-                    "bio" to bio,
-                    "userId" to auth.currentUser?.uid
-                )
-                db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
+                db.collection("jobs").document(jobId).delete()
                     .addOnSuccessListener {
-                        Toast.makeText(
-                            navController.context,
-                            "Profile created successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.navigate(Screens.ViewProfileScreen.route)
+                        Toast.makeText(navController.context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
+                        navController.popBackStack()
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(
-                            navController.context,
-                            "Failed to create profile: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast.makeText(navController.context, "Failed: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Create Profile")
+            Text("Delete Job")
         }
     }
 }

@@ -1,123 +1,83 @@
 package com.example.istjobportal.screen
 
-import androidx.compose.foundation.layout.Arrangement
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.istjobportal.utils.JobData
-import com.example.istjobportal.utils.SharedViewModel
-import com.google.firebase.Timestamp
-import kotlinx.coroutines.launch
+import com.example.istjobportal.nav.Screens
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun AddJobScreen(navController: NavController, sharedViewModel: SharedViewModel) {
-    var id by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var company by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
-    var postedDate by remember { mutableStateOf(Timestamp.now()) }
-    var expiryDate by remember { mutableStateOf(Timestamp.now()) }
-
-    val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+fun AddJobScreen(navController: NavController) {
+    var jobTitle by remember { mutableStateOf("") }
+    var jobDescription by remember { mutableStateOf("") }
+    val db = FirebaseFirestore.getInstance()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        OutlinedTextField(
-            value = id,
-            onValueChange = { id = it },
-            label = { Text("Job ID") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        )
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
+        TextField(
+            value = jobTitle,
+            onValueChange = { jobTitle = it },
             label = { Text("Job Title") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
-        OutlinedTextField(
-            value = company,
-            onValueChange = { company = it },
-            label = { Text("Company Name") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        )
-        OutlinedTextField(
-            value = type,
-            onValueChange = { type = it },
-            label = { Text("Job Type (e.g., Full-time, Part-time)") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        )
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            label = { Text("Job Location") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        )
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = jobDescription,
+            onValueChange = { jobDescription = it },
             label = { Text("Job Description") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
+            modifier = Modifier.fillMaxWidth()
         )
-        OutlinedTextField(
-            value = imageUrl,
-            onValueChange = { imageUrl = it },
-            label = { Text("Image URL") },
-            modifier = Modifier.fillMaxWidth().padding(8.dp)
-        )
-        // DatePicker for expiryDate
-        // (You might want to implement a date picker dialog to select the expiry date)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
-                coroutineScope.launch {
-                    // Create JobData object
-                    val newJob = JobData(
-                        id = id,
-                        title = title,
-                        company = company,
-                        type = type,
-                        location = location,
-                        description = description,
-                        imageUrl = imageUrl,
-                        postedDate = postedDate,
-                        expiryDate = expiryDate
-                    )
-
-                    // Save to Firestore
-//                    sharedViewModel.addJobToFirestore(newJob, context)
-
-                    // Navigate back or show a success message
-                    navController.popBackStack()
-                }
+                val job = hashMapOf(
+                    "title" to jobTitle,
+                    "description" to jobDescription
+                )
+                db.collection("jobs").add(job)
+                    .addOnSuccessListener {
+                        Toast.makeText(
+                            navController.context,
+                            "Job added successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        navController.navigate(Screens.ManageJobsScreen.route)
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(
+                            navController.context,
+                            "Failed to add job: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             },
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text("Add Job")
         }
     }
 }
-
