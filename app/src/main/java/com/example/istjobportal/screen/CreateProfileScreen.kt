@@ -1,12 +1,23 @@
 package com.example.istjobportal.screen
 
+import android.media.Image
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -17,23 +28,55 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role.Companion.Image
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.example.istjobportal.nav.Screens
+import com.google.api.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 @Composable
 fun CreateProfileScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
+    var profilePhotoUri by remember { mutableStateOf<Uri?>(null) } // For storing selected image URI
+    var phone by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var skills by remember { mutableStateOf("") }
+    var linkedin by remember { mutableStateOf("") }
+    var courses by remember { mutableStateOf("") }
+    var graduationYear by remember { mutableStateOf("") }
+    var currentJob by remember { mutableStateOf("") }
+    var experiences by remember { mutableStateOf("") }
+
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
+    val storageRef = FirebaseStorage.getInstance().reference
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            profilePhotoUri = uri
+        }
+    )
+
+    val context = LocalContext.current // Obtain context
+
+    // State to enable vertical scrolling
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(16.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TextField(
@@ -55,28 +98,142 @@ fun CreateProfileScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
+            onClick = { launcher.launch("image/*") }, // Open image picker
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Select Profile Photo")
+        }
+
+        profilePhotoUri?.let {
+            Spacer(modifier = Modifier.height(16.dp))
+            Image(
+                painter = rememberImagePainter(it), // Coil image loading
+                contentDescription = "Profile Photo",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Color.Gray, CircleShape)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Phone") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = location,
+            onValueChange = { location = it },
+            label = { Text("Location") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = skills,
+            onValueChange = { skills = it },
+            label = { Text("Skills (comma separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = linkedin,
+            onValueChange = { linkedin = it },
+            label = { Text("LinkedIn Profile") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = courses,
+            onValueChange = { courses = it },
+            label = { Text("Courses (comma separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = graduationYear,
+            onValueChange = { graduationYear = it },
+            label = { Text("Graduation Year") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = currentJob,
+            onValueChange = { currentJob = it },
+            label = { Text("Current Job") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = experiences,
+            onValueChange = { experiences = it },
+            label = { Text("Experiences") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
             onClick = {
-                val profile = hashMapOf(
-                    "name" to name,
-                    "bio" to bio,
-                    "userId" to auth.currentUser?.uid
-                )
-                db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
-                    .addOnSuccessListener {
-                        Toast.makeText(
-                            navController.context,
-                            "Profile created successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        navController.navigate(Screens.ViewProfileScreen.route)
+                profilePhotoUri?.let { uri ->
+                    val photoRef = storageRef.child("profilePhotos/${auth.currentUser!!.uid}.jpg")
+                    val uploadTask = photoRef.putFile(uri)
+
+                    uploadTask.continueWithTask { task ->
+                        if (!task.isSuccessful) {
+                            task.exception?.let { throw it }
+                        }
+                        photoRef.downloadUrl
+                    }.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val downloadUri = task.result
+                            val profile = hashMapOf(
+                                "name" to name,
+                                "bio" to bio,
+                                "profilePhotoUri" to downloadUri.toString(),
+                                "phone" to phone,
+                                "location" to location,
+                                "skills" to skills.split(",").map { it.trim() },
+                                "linkedin" to linkedin,
+                                "courses" to courses.split(",").map { it.trim() },
+                                "graduationYear" to graduationYear,
+                                "currentJob" to currentJob,
+                                "experiences" to experiences,
+                                "userId" to auth.currentUser?.uid
+                            )
+                            db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
+                                .addOnSuccessListener {
+                                    Toast.makeText(context, "Profile created successfully", Toast.LENGTH_SHORT).show()
+                                    // Redirect to the dashboard after profile creation
+                                    navController.navigate(Screens.DashboardScreen.route)
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(context, "Failed to create profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(
-                            navController.context,
-                            "Failed to create profile: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {

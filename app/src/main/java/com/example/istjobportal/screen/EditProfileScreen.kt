@@ -28,17 +28,34 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun EditProfileScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var skills by remember { mutableStateOf("") }
+    var linkedin by remember { mutableStateOf("") }
+    var courses by remember { mutableStateOf("") }
+    var graduationYear by remember { mutableStateOf("") }
+    var currentJob by remember { mutableStateOf("") }
+    var experiences by remember { mutableStateOf("") }
+
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
     LaunchedEffect(Unit) {
-        // Fetch existing profile
+        // Fetch existing profile data
         val userId = auth.currentUser?.uid ?: return@LaunchedEffect
         db.collection("alumniProfiles").document(userId).get()
             .addOnSuccessListener { document ->
                 document?.let {
                     name = it.getString("name") ?: ""
                     bio = it.getString("bio") ?: ""
+                    phone = it.getString("phone") ?: ""
+                    location = it.getString("location") ?: ""
+                    skills = (it.get("skills") as? List<String>)?.joinToString(", ") ?: ""
+                    linkedin = it.getString("linkedin") ?: ""
+                    courses = (it.get("courses") as? List<String>)?.joinToString(", ") ?: ""
+                    graduationYear = it.getString("graduationYear") ?: ""
+                    currentJob = it.getString("currentJob") ?: ""
+                    experiences = it.getString("experiences") ?: ""
                 }
             }
     }
@@ -67,13 +84,94 @@ fun EditProfileScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        TextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = { Text("Phone") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = location,
+            onValueChange = { location = it },
+            label = { Text("Location") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = skills,
+            onValueChange = { skills = it },
+            label = { Text("Skills (comma separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = linkedin,
+            onValueChange = { linkedin = it },
+            label = { Text("LinkedIn") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = courses,
+            onValueChange = { courses = it },
+            label = { Text("Courses (comma separated)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = graduationYear,
+            onValueChange = { graduationYear = it },
+            label = { Text("Graduation Year") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = currentJob,
+            onValueChange = { currentJob = it },
+            label = { Text("Current Job") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        TextField(
+            value = experiences,
+            onValueChange = { experiences = it },
+            label = { Text("Experiences") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
         Button(
             onClick = onClick@{
                 val userId = auth.currentUser?.uid ?: return@onClick
                 val profile = hashMapOf(
                     "name" to name,
-                    "bio" to bio
+                    "bio" to bio,
+                    "phone" to phone,
+                    "location" to location,
+                    "skills" to skills.split(",").map { it.trim() },  // Converting comma-separated string to a list
+                    "linkedin" to linkedin,
+                    "courses" to courses.split(",").map { it.trim() },  // Converting comma-separated string to a list
+                    "graduationYear" to graduationYear,
+                    "currentJob" to currentJob,
+                    "experiences" to experiences
                 )
+
                 db.collection("alumniProfiles").document(userId).set(profile)
                     .addOnSuccessListener {
                         Toast.makeText(navController.context, "Profile updated", Toast.LENGTH_SHORT).show()

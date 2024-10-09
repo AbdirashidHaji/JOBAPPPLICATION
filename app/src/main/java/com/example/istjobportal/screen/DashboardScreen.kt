@@ -1,12 +1,18 @@
 package com.example.istjobportal.screen
 
-import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.AddCircle
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.istjobportal.nav.Screens
@@ -22,116 +28,156 @@ fun DashboardScreen(
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
-    // Content specific to user role
+    // Dashboard content
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Role-based title
         Text(
             text = if (role == "admin") "Admin Dashboard" else "Alumni Dashboard",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.primary
+            style = MaterialTheme.typography.headlineLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (role == "admin") {
-            // Admin-specific features
-            Button(
-                onClick = { navController.navigate(Screens.AddJobScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Add Job Listing")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.EditJobScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Edit Job Listing")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.DeleteJobScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Delete Job Listing")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.ManageJobsScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Manage Jobs")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.ViewProfilesScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Alumni Profiles")
-            }
-        } else {
-            // Alumni-specific features
-            Button(
-                onClick = { navController.navigate(Screens.CreateProfileScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Create Profile")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.EditProfileScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Edit Profile")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.ApplyForJobScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Apply for Job")
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { navController.navigate(Screens.ViewProfileScreen.route) },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Your Profile")
+        // Feature cards
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            if (role == "admin") {
+                DashboardCard(
+                    title = "Add Job Listing",
+                    description = "Post new job listings for alumni.",
+                    icon = Icons.Default.Add,
+                    onClick = { navController.navigate(Screens.AddJobScreen.route) }
+                )
+                DashboardCard(
+                    title = "Edit Job Listing",
+                    description = "Modify existing job listings.",
+                    icon = Icons.Default.Edit,
+                    onClick = { navController.navigate(Screens.EditJobScreen.route) }
+                )
+                DashboardCard(
+                    title = "Delete Job Listing",
+                    description = "Remove outdated job listings.",
+                    icon = Icons.Default.Delete,
+                    onClick = { navController.navigate(Screens.DeleteJobScreen.route) }
+                )
+                DashboardCard(
+                    title = "Manage Jobs",
+                    description = "View and manage all jobs.",
+                    icon = Icons.Default.List,
+                    onClick = { navController.navigate(Screens.ManageJobsScreen.route) }
+                )
+                DashboardCard(
+                    title = "View Alumni Profiles",
+                    description = "Browse alumni profiles.",
+                    icon = Icons.Default.Person,
+                    onClick = { navController.navigate(Screens.ViewProfilesScreen.route) }
+                )
+            } else {
+                DashboardCard(
+                    title = "Create Profile",
+                    description = "Create your alumni profile.",
+                    icon = Icons.Rounded.Person,
+                    onClick = { navController.navigate(Screens.CreateProfileScreen.route) }
+                )
+                DashboardCard(
+                    title = "Edit Profile",
+                    description = "Update your profile details.",
+                    icon = Icons.Default.Edit,
+                    onClick = { navController.navigate(Screens.EditProfileScreen.route) }
+                )
+                DashboardCard(
+                    title = "Apply for Job",
+                    description = "Search and apply for jobs.",
+                    icon = Icons.Rounded.AddCircle,
+                    onClick = { navController.navigate(Screens.ApplyForJobScreen.route) }
+                )
+                DashboardCard(
+                    title = "View Your Profile",
+                    description = "Check your current profile.",
+                    icon = Icons.Default.Person,
+                    onClick = { navController.navigate(Screens.ViewProfileScreen.route) }
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // Spacer between main actions and logout
+        Spacer(modifier = Modifier.weight(1f))
 
         // Logout Button
-        Button(
-            onClick = {
-                auth.signOut()
-                navController.navigate(Screens.LoginScreen.route) {
-                    popUpTo(Screens.LoginScreen.route) { inclusive = true }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-            modifier = Modifier.fillMaxWidth()
+        LogoutButton(auth, navController)
+    }
+}
+
+@Composable
+fun DashboardCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Logout", color = Color.White)
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                )
+            }
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(40.dp)
+            )
         }
+    }
+}
+
+@Composable
+fun LogoutButton(auth: FirebaseAuth, navController: NavController) {
+    Button(
+        onClick = {
+            auth.signOut()
+            navController.navigate(Screens.LoginScreen.route) {
+                popUpTo(Screens.LoginScreen.route) { inclusive = true }
+            }
+        },
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Text("Logout", color = Color.White, style = MaterialTheme.typography.bodyLarge)
     }
 }

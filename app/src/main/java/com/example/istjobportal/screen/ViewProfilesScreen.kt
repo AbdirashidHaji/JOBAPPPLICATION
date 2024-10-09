@@ -1,5 +1,6 @@
 package com.example.istjobportal.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,17 +23,29 @@ import com.google.firebase.firestore.FirebaseFirestore
 @Composable
 fun ViewProfilesScreen(navController: NavController) {
     val db = FirebaseFirestore.getInstance()
-    var profiles by remember { mutableStateOf<List<Map<String, String>>>(emptyList()) }
+    var profiles by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         db.collection("alumniProfiles").get()
             .addOnSuccessListener { documents ->
-                profiles = documents.map { document ->
-                    mapOf(
-                        "name" to document.getString("name")!!,
-                        "bio" to document.getString("bio")!!
+                profiles = documents.flatMap { document ->
+                    listOf(
+                        Pair("Name", document.getString("name") ?: "No Name"),
+                        Pair("Bio", document.getString("bio") ?: "No Bio"),
+                        Pair("Phone", document.getString("phone") ?: "No Phone"),
+                        Pair("Location", document.getString("location") ?: "No Location"),
+                        Pair("Skills", (document.get("skills") as? List<*>)?.joinToString(", ") ?: "No Skills"),
+                        Pair("LinkedIn", document.getString("linkedin") ?: "No LinkedIn"),
+                        Pair("Courses", (document.get("courses") as? List<*>)?.joinToString(", ") ?: "No Courses"),
+                        Pair("Graduation Year", document.getString("graduationYear") ?: "No Graduation Year"),
+                        Pair("Current Job", document.getString("currentJob") ?: "No Current Job"),
+                        Pair("Experiences", (document.get("experiences") as? List<*>)?.joinToString(", ") ?: "No Experiences")
                     )
                 }
+            }
+            .addOnFailureListener { e ->
+                // Handle the failure case here
+                Log.e("ViewProfilesScreen", "Error fetching profiles", e)
             }
     }
 
@@ -45,9 +58,8 @@ fun ViewProfilesScreen(navController: NavController) {
         Text(text = "Alumni Profiles", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        profiles.forEach { profile ->
-            Text(text = "Name: ${profile["name"]}")
-            Text(text = "Bio: ${profile["bio"]}")
+        profiles.forEach { (key, value) ->
+            Text(text = "$key: $value")
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

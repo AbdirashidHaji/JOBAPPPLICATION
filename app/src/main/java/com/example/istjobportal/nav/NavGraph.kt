@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.istjobportal.screen.AddJobScreen
+import com.example.istjobportal.screen.ApplyForJobScreen
 import com.example.istjobportal.screen.CreateProfileScreen
 import com.example.istjobportal.screen.DashboardScreen
 import com.example.istjobportal.screen.DeleteJobScreen
@@ -37,7 +38,6 @@ fun NavGraph(navController: NavHostController) {
 
        composable(route = Screens.AddJobScreen.route) {
            AddJobScreen(navController = navController)
-//           AddJobScreen(navController = navController)
        }
 
         composable(route = Screens.EditJobScreen.route) {
@@ -51,7 +51,7 @@ fun NavGraph(navController: NavHostController) {
         composable(route = Screens.ManageJobsScreen.route) {
            ManageJobsScreen(navController = navController)
        }
-//
+
         composable(route = Screens.CreateProfileScreen.route) {
            CreateProfileScreen(navController = navController)
        }
@@ -64,11 +64,11 @@ fun NavGraph(navController: NavHostController) {
           EditProfileScreen(navController = navController)
 
        }
-//
-//        composable(route = Screens.ApplyForJobScreen.route) {
-//            ApplyForJobScreen(navController = navController)
-//        }
-//
+
+       composable(route = Screens.ApplyForJobScreen.route) {
+            ApplyForJobScreen(navController = navController)
+        }
+
         composable(route = Screens.ViewProfilesScreen.route) {
            ViewProfilesScreen(navController = navController)
         }
