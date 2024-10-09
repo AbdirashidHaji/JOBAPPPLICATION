@@ -158,7 +158,7 @@ fun AddJobScreen(navController: NavController) {
                 db.collection("jobListings").add(jobDetails)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Job posted successfully", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Screens.DashboardScreen.route)
+                        navController.navigate(Screens.DashboardScreen.route +"/admin")
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(context, "Failed to post job: ${e.message}", Toast.LENGTH_SHORT).show()
