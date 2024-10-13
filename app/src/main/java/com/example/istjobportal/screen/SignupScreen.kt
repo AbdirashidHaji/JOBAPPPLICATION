@@ -35,6 +35,7 @@ fun SignupScreen(navController: NavController) {
     var passwordVisible by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
+    var loading by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -120,20 +121,29 @@ fun SignupScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Show progress bar when loading is true
+                if (loading) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
                 Button(
                     onClick = {
                         if (password == confirmPassword) {
+                            loading = true // Start loading
                             signUp(email, password, navController, { user ->
+                                loading = false // Stop loading on success
                                 successMessage = "Welcome ${user?.email}"
-                                // Navigate to LoginScreen on successful sign up
                             }, { error ->
+                                loading = false // Stop loading on failure
                                 errorMessage = error
                             })
                         } else {
                             errorMessage = "Passwords do not match"
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading // Disable button when loading
                 ) {
                     Text("Sign Up")
                 }
@@ -142,7 +152,8 @@ fun SignupScreen(navController: NavController) {
 
                 Button(
                     onClick = { navController.navigate(Screens.LoginScreen.route) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !loading // Disable button when loading
                 ) {
                     Text("Already have an account? Login")
                 }
@@ -180,7 +191,6 @@ private fun signUp(
             if (task.isSuccessful) {
                 val user = auth.currentUser
                 user?.let {
-                    // Default role set to "alumni"
                     val role = "alumni"
                     val db = FirebaseFirestore.getInstance()
 
@@ -197,22 +207,18 @@ private fun signUp(
                             user.sendEmailVerification()
                                 .addOnCompleteListener { verificationTask ->
                                     if (verificationTask.isSuccessful) {
-                                        // Navigate to Login Screen after successful signup and email verification
                                         navController.navigate(Screens.LoginScreen.route)
                                         onSuccess(user)
                                     } else {
-                                        // Handle verification email failure
                                         onFailure(verificationTask.exception?.message ?: "Failed to send verification email")
                                     }
                                 }
                         }
                         .addOnFailureListener { e ->
-                            // Handle Firestore write failure
                             onFailure(e.message ?: "Failed to save user data")
                         }
                 }
             } else {
-                // Handle sign up failure
                 onFailure(task.exception?.message ?: "Sign up failed")
             }
         }

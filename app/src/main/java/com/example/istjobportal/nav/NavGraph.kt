@@ -13,11 +13,10 @@ import com.example.istjobportal.screen.EditJobScreen
 import com.example.istjobportal.screen.EditProfileScreen
 import com.example.istjobportal.screen.LoginScreen
 import com.example.istjobportal.screen.SignupScreen
-import com.example.istjobportal.screen.ForgotPasswordScreen
+import com.example.istjobportal.screen.JobScreen
 import com.example.istjobportal.screen.ManageJobsScreen
 import com.example.istjobportal.screen.ViewProfileScreen
 import com.example.istjobportal.screen.ViewProfilesScreen
-import com.example.istjobportal.utils.SharedViewModel
 
 @Composable
 fun NavGraph(navController: NavHostController) {
@@ -36,41 +35,45 @@ fun NavGraph(navController: NavHostController) {
             DashboardScreen(navController = navController, role = role)
         }
 
-       composable(route = Screens.AddJobScreen.route) {
-           AddJobScreen(navController = navController)
-       }
+        composable(route = Screens.AddJobScreen.route) {
+            AddJobScreen(navController = navController)
+        }
 
         composable(route = Screens.EditJobScreen.route) {
-            EditJobScreen(navController = navController)
+            EditJobScreen(navController = navController,)
         }
 
         composable(route = Screens.DeleteJobScreen.route) {
             DeleteJobScreen(navController = navController)
-       }
+        }
 
         composable(route = Screens.ManageJobsScreen.route) {
-           ManageJobsScreen(navController = navController)
-       }
+            ManageJobsScreen(navController = navController)
+        }
 
         composable(route = Screens.CreateProfileScreen.route) {
-           CreateProfileScreen(navController = navController)
-       }
+            CreateProfileScreen(navController = navController)
+        }
 
         composable(route = Screens.ViewProfileScreen.route) {
-           ViewProfileScreen(navController = navController)
-       }
+            ViewProfileScreen(navController = navController)
+        }
 
-       composable(route = Screens.EditProfileScreen.route) {
-          EditProfileScreen(navController = navController)
+        composable(route = Screens.EditProfileScreen.route) {
+            EditProfileScreen(navController = navController)
+        }
 
-       }
-
-       composable(route = Screens.ApplyForJobScreen.route) {
+        composable(route = Screens.ApplyForJobScreen.route) {
             ApplyForJobScreen(navController = navController)
         }
 
         composable(route = Screens.ViewProfilesScreen.route) {
-           ViewProfilesScreen(navController = navController)
+            ViewProfilesScreen(navController = navController)
+        }
+
+        // Add JobScreen here
+        composable(route = Screens.JobScreen.route) {
+            JobScreen(navController = navController)
         }
     }
 }

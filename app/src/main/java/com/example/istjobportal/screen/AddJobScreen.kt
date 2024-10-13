@@ -1,172 +1,150 @@
 package com.example.istjobportal.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.istjobportal.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun AddJobScreen(navController: NavController) {
-    var jobTitle by remember { mutableStateOf("") }
-    var jobDescription by remember { mutableStateOf("") }
-    var jobLocation by remember { mutableStateOf("") }
-    var salary by remember { mutableStateOf("") }
-    var experience by remember { mutableStateOf("") }
-    var educationLevel by remember { mutableStateOf("") }
+fun AddJobScreen(navController: NavHostController) {
+    var title by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     var company by remember { mutableStateOf("") }
-    var jobType by remember { mutableStateOf("") }
-    var deadlineDate by remember { mutableStateOf("") }
-    var dateAdded by remember { mutableStateOf("") }
+    var startDate by remember { mutableStateOf("") }
+    var expiryDate by remember { mutableStateOf("") }
+    var vacancies by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) } // Loading state
+    val context = LocalContext.current // Get the context once
 
-    val auth = FirebaseAuth.getInstance()
+    // Firestore instance
     val db = FirebaseFirestore.getInstance()
-
-    val context = LocalContext.current
-    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(scrollState),
+            .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
-            value = jobTitle,
-            onValueChange = { jobTitle = it },
-            label = { Text("Job Title") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Go Back Button
+        Button(onClick = {
+            navController.navigate(Screens.DashboardScreen.route) {
+                popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+            }
+        }) {
+            Text("Go Back")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
-            value = jobDescription,
-            onValueChange = { jobDescription = it },
+        Text(text = "Add Job", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Job Title Input
+        OutlinedTextField(
+            value = title,
+            onValueChange = { title = it },
+            label = { Text("Job Title") }
+        )
+
+        // Job Description Input
+        OutlinedTextField(
+            value = description,
+            onValueChange = { description = it },
             label = { Text("Job Description") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.height(100.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = jobLocation,
-            onValueChange = { jobLocation = it },
-            label = { Text("Job Location") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = salary,
-            onValueChange = { salary = it },
-            label = { Text("Salary") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = experience,
-            onValueChange = { experience = it },
-            label = { Text("Experience (in years)") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = educationLevel,
-            onValueChange = { educationLevel = it },
-            label = { Text("Education Level") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
+        // Company Input
+        OutlinedTextField(
             value = company,
             onValueChange = { company = it },
-            label = { Text("Company Name") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Company") }
+        )
+
+        // Start Date Input
+        OutlinedTextField(
+            value = startDate,
+            onValueChange = { startDate = it },
+            label = { Text("Start Date (e.g., 01/01/2024)") }
+        )
+
+        // Expiry Date Input
+        OutlinedTextField(
+            value = expiryDate,
+            onValueChange = { expiryDate = it },
+            label = { Text("Expiry Date (e.g., 01/31/2024)") }
+        )
+
+        // Vacancies Input
+        OutlinedTextField(
+            value = vacancies,
+            onValueChange = { vacancies = it },
+            label = { Text("Number of Vacancies") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        TextField(
-            value = jobType,
-            onValueChange = { jobType = it },
-            label = { Text("Job Type (e.g. Full-time, Part-time)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = deadlineDate,
-            onValueChange = { deadlineDate = it },
-            label = { Text("Deadline Date") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = dateAdded,
-            onValueChange = { dateAdded = it },
-            label = { Text("Date Added") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
+        // Show CircularProgressIndicator when loading
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+        }
 
         Button(
             onClick = {
-                val jobDetails = hashMapOf(
-                    "jobTitle" to jobTitle,
-                    "jobDescription" to jobDescription,
-                    "jobLocation" to jobLocation,
-                    "salary" to salary,
-                    "experience" to experience,
-                    "educationLevel" to educationLevel,
+                isLoading = true // Start loading
+
+                // Create a new job entry
+                val job = hashMapOf(
+                    "title" to title,
+                    "description" to description,
                     "company" to company,
-                    "jobType" to jobType,
-                    "deadlineDate" to deadlineDate,
-                    "dateAdded" to dateAdded,
-                    "postedBy" to auth.currentUser?.uid
+                    "startDate" to startDate,
+                    "expiryDate" to expiryDate,
+                    "vacancies" to (vacancies.toIntOrNull() ?: 0) // Convert to Int, default to 0 if null
                 )
 
-                db.collection("jobListings").add(jobDetails)
+                // Add the job to Firestore
+                db.collection("jobs")
+                    .add(job)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Job posted successfully", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Screens.DashboardScreen.route +"/admin")
+                        Toast.makeText(context, "Job added successfully", Toast.LENGTH_SHORT).show()
+                        navController.navigate(Screens.DashboardScreen.route) {
+                            popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+                        }
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to post job: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to add job: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnCompleteListener {
+                        isLoading = false // Stop loading
                     }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading // Disable button while loading
         ) {
-            Text("Post Job")
+            Text("Add Job")
         }
     }
 }

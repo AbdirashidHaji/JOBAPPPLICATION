@@ -14,5 +14,6 @@ sealed class Screens(val route: String){
     data object ApplyForJobScreen : Screens("apply_job")
     data object ViewProfileScreen : Screens("view_profile")
     data object ViewProfilesScreen : Screens("view_profiles")
+    data object JobScreen:Screens( route = "Job_Screen")
 
 }

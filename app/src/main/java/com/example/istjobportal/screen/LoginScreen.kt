@@ -32,6 +32,7 @@ fun LoginScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var passwordVisible by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) } // Loading state
 
     Box(
         modifier = Modifier
@@ -39,117 +40,124 @@ fun LoginScreen(navController: NavController) {
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        Card(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(8.dp)
-        ) {
-            Column(
+        if (isLoading) {
+            CircularProgressIndicator() // Show loading indicator when signing in
+        } else {
+            Card(
                 modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(8.dp)
             ) {
-                Text(
-                    text = "Login",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontSize = 24.sp
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Image(
+                Column(
                     modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(56.dp)),
-                    painter = painterResource(R.drawable.ist_logo),
-                    contentDescription = "Login"
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                TextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Checkbox(
-                        checked = passwordVisible,
-                        onCheckedChange = { passwordVisible = it }
-                    )
-                    Text(text = if (passwordVisible) "Hide Password" else "Show Password")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Forgot Password?",
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable {
-                        navController.navigate(Screens.ForgotPasswordScreen.route)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        signIn(email, password, auth, { user ->
-                            // Navigate based on the role of the user
-                            if (user != null) {
-                                fetchUserRoleAndNavigate(
-                                    user,
-                                    auth,
-                                    navController
-                                )
-                            }
-                        }, { error ->
-                            errorMessage = error
-                        })
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Sign In")
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.navigate(Screens.SignupScreen.route) },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Don't have an account? Sign Up")
-                }
-
-                // Display error message if exists
-                errorMessage?.let {
                     Text(
-                        text = it,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
+                        text = "Login",
+                        color = MaterialTheme.colorScheme.primary,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 24.sp
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Image(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(RoundedCornerShape(56.dp)),
+                        painter = painterResource(R.drawable.ist_logo),
+                        contentDescription = "Login"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { Text("Email") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    TextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = passwordVisible,
+                            onCheckedChange = { passwordVisible = it }
+                        )
+                        Text(text = if (passwordVisible) "Hide Password" else "Show Password")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Forgot Password?",
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable {
+                            navController.navigate(Screens.ForgotPasswordScreen.route)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+                            isLoading = true // Set loading to true when sign-in starts
+                            signIn(email, password, auth, { user ->
+                                // Navigate based on the role of the user
+                                if (user != null) {
+                                    fetchUserRoleAndNavigate(
+                                        user,
+                                        auth,
+                                        navController
+                                    )
+                                }
+                                isLoading = false // Stop loading after successful sign-in
+                            }, { error ->
+                                errorMessage = error
+                                isLoading = false // Stop loading after error
+                            })
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Sign In")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { navController.navigate(Screens.SignupScreen.route) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Don't have an account? Sign Up")
+                    }
+
+                    // Display error message if exists
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
         }

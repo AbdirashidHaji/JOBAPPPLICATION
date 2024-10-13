@@ -98,7 +98,7 @@ fun DashboardScreen(
                     title = "Apply for Job",
                     description = "Search and apply for jobs.",
                     icon = Icons.Rounded.AddCircle,
-                    onClick = { navController.navigate(Screens.ApplyForJobScreen.route) }
+                    onClick = { navController.navigate(Screens.JobScreen.route) }
                 )
                 DashboardCard(
                     title = "View Your Profile",
@@ -106,6 +106,7 @@ fun DashboardScreen(
                     icon = Icons.Default.Person,
                     onClick = { navController.navigate(Screens.ViewProfileScreen.route) }
                 )
+
             }
         }
 

@@ -2,10 +2,7 @@ package com.example.istjobportal.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -15,63 +12,43 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
+import com.example.istjobportal.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun ApplyForJobScreen(navController: NavController) {
-    var jobTitle by remember { mutableStateOf("") }
-    var coverLetter by remember { mutableStateOf("") }
-    val auth = FirebaseAuth.getInstance()
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var resumeUrl by remember { mutableStateOf("") }
     val db = FirebaseFirestore.getInstance()
+    val context = LocalContext.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TextField(
-            value = jobTitle,
-            onValueChange = { jobTitle = it },
-            label = { Text("Job Title") },
-            modifier = Modifier.fillMaxWidth()
-        )
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        TextField(value = name, onValueChange = { name = it }, label = { Text("Full Name") })
+        TextField(value = email, onValueChange = { email = it }, label = { Text("Email") })
+        TextField(value = resumeUrl, onValueChange = { resumeUrl = it }, label = { Text("Resume URL") })
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        TextField(
-            value = coverLetter,
-            onValueChange = { coverLetter = it },
-            label = { Text("Cover Letter") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = onClick@{
-                val userId = auth.currentUser?.uid ?: return@onClick
-                val application = hashMapOf(
-                    "userId" to userId,
-                    "jobTitle" to jobTitle,
-                    "coverLetter" to coverLetter
-                )
-                db.collection("jobApplications").add(application)
-                    .addOnSuccessListener {
-                        Toast.makeText(navController.context, "Applied successfully", Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
-                    }
-                    .addOnFailureListener { e ->
-                        Toast.makeText(navController.context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+        Button(onClick = {
+            val application = hashMapOf(
+                "name" to name,
+                "email" to email,
+                "resumeUrl" to resumeUrl,
+//                "jobId" to jobId,
+                "appliedAt" to System.currentTimeMillis()
+            )
+            db.collection("jobApplications").add(application)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Application submitted successfully", Toast.LENGTH_SHORT).show()
+                    navController.navigate(Screens.DashboardScreen.route)
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(context, "Failed to submit application: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        }) {
             Text("Apply for Job")
         }
     }
