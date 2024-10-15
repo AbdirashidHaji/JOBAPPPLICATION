@@ -130,7 +130,7 @@ fun AddJobScreen(navController: NavHostController) {
                     .add(job)
                     .addOnSuccessListener {
                         Toast.makeText(context, "Job added successfully", Toast.LENGTH_SHORT).show()
-                        navController.navigate(Screens.DashboardScreen.route) {
+                        navController.navigate("${Screens.DashboardScreen.route}/admin") {
                             popUpTo(Screens.DashboardScreen.route) { inclusive = true }
                         }
                     }

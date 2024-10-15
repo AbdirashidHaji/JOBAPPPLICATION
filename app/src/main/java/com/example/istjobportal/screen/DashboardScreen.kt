@@ -2,7 +2,9 @@ package com.example.istjobportal.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.AddCircle
@@ -28,11 +30,15 @@ fun DashboardScreen(
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
+    // Scroll state
+    val scrollState = rememberScrollState()
+
     // Dashboard content
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(24.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Role-based title
@@ -51,6 +57,7 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             if (role == "admin") {
+                // Admin-specific options
                 DashboardCard(
                     title = "Add Job Listing",
                     description = "Post new job listings for alumni.",
@@ -69,11 +76,12 @@ fun DashboardScreen(
                     icon = Icons.Default.Delete,
                     onClick = { navController.navigate(Screens.DeleteJobScreen.route) }
                 )
+                // New card for viewing job listings
                 DashboardCard(
-                    title = "Manage Jobs",
-                    description = "View and manage all jobs.",
+                    title = "View Job Listings",
+                    description = "Browse all job listings.",
                     icon = Icons.Default.List,
-                    onClick = { navController.navigate(Screens.ManageJobsScreen.route) }
+                    onClick = { navController.navigate(Screens.JobListScreen.route) }
                 )
                 DashboardCard(
                     title = "View Alumni Profiles",
@@ -81,7 +89,14 @@ fun DashboardScreen(
                     icon = Icons.Default.Person,
                     onClick = { navController.navigate(Screens.ViewProfilesScreen.route) }
                 )
+                DashboardCard(
+                    title = "View Applications",
+                    description = "Browse Applications.",
+                    icon = Icons.Default.Person,
+                    onClick = { navController.navigate(Screens.DisplayApplicationScreen.route) }
+                )
             } else {
+                // Alumni-specific options
                 DashboardCard(
                     title = "Create Profile",
                     description = "Create your alumni profile.",
@@ -95,7 +110,7 @@ fun DashboardScreen(
                     onClick = { navController.navigate(Screens.EditProfileScreen.route) }
                 )
                 DashboardCard(
-                    title = "Apply for Job",
+                    title = "Job Listing",
                     description = "Search and apply for jobs.",
                     icon = Icons.Rounded.AddCircle,
                     onClick = { navController.navigate(Screens.JobScreen.route) }
@@ -106,7 +121,12 @@ fun DashboardScreen(
                     icon = Icons.Default.Person,
                     onClick = { navController.navigate(Screens.ViewProfileScreen.route) }
                 )
-
+                DashboardCard(
+                    title = "Applications status",
+                    description = "Check your Applications status.",
+                    icon = Icons.Default.Person,
+                    onClick = { navController.navigate(Screens.ApplicationStatusScreen.route) }
+                )
             }
         }
 

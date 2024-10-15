@@ -275,7 +275,8 @@ fun CreateProfileScreen(navController: NavController) {
                                         .addOnSuccessListener {
                                             Toast.makeText(context, "Profile created successfully", Toast.LENGTH_SHORT).show()
                                             // Navigate to the dashboard screen after successful profile creation
-                                            navController.navigate(Screens.DashboardScreen.route)
+                                            navController.navigate(Screens.DashboardScreen.route + "/alumni")
+
                                         }
                                         .addOnFailureListener { e ->
                                             Toast.makeText(context, "Failed to create profile: ${e.message}", Toast.LENGTH_SHORT).show()

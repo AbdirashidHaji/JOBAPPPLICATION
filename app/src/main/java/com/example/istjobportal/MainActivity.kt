@@ -14,12 +14,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.istjobportal.nav.NavGraph
 import com.example.istjobportal.nav.Screens
+import com.example.istjobportal.screen.DashboardScreen
 import com.example.istjobportal.ui.theme.IstJobPortalTheme
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var navController: NavHostController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -28,14 +30,15 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
-                ){
-              navController = rememberNavController()
-                    //calling navGraph
-                    NavGraph(navController = navController)                }
-
+                ) {
+                    navController = rememberNavController()
+                    // Calling navGraph
+                    NavGraph(navController = navController)
+                }
             }
         }
     }
+
     @Preview(showBackground = true)
     @Composable
     fun SignupScreenPreview() {
@@ -44,4 +47,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-

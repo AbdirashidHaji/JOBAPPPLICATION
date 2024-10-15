@@ -53,7 +53,6 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.firebase.auth.ktx)
-//    implementation(libs.play.services.auth)
     implementation(libs.coil.compose)
     implementation(libs.coil.compose.v200)
     implementation(libs.androidx.core.ktx)

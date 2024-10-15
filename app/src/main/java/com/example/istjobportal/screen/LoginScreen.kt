@@ -220,6 +220,7 @@ private fun checkIfProfileExists(
         .addOnSuccessListener { documentSnapshot ->
             if (documentSnapshot.exists()) {
                 navController.navigate(Screens.DashboardScreen.route + "/alumni")
+                //navController.navigate(Screens.DashboardScreen.route + "/alumni")
             } else {
                 navController.navigate(Screens.CreateProfileScreen.route)
             }
