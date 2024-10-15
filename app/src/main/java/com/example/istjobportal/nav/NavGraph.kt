@@ -16,6 +16,7 @@ import com.example.istjobportal.screen.JobListScreen
 import com.example.istjobportal.screen.DeleteJobScreen
 import com.example.istjobportal.screen.EditJobScreen
 import com.example.istjobportal.screen.DisplayApplicationScreen
+import com.example.istjobportal.screen.EditProfileScreen
 import com.example.istjobportal.screen.LoginScreen
 import com.example.istjobportal.screen.SignupScreen
 import com.example.istjobportal.screen.ViewProfileScreen
@@ -94,6 +95,7 @@ fun NavGraph(navController: NavHostController) {
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            EditProfileScreen(navController = navController )
         }
 
         // View Profiles Screen

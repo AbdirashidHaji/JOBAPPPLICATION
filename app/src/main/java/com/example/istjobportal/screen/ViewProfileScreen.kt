@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
+import com.example.istjobportal.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -139,7 +140,9 @@ fun ViewProfileScreen(navController: NavController) {
                 // Edit Profile Button
                 item {
                     Button(
-                        onClick = { navController.navigate("editProfile") },
+                        onClick = { navController.navigate(Screens.EditProfileScreen.route)
+//                                   navController.navigate(Screens.DashboardScreen.route + "/alumni")
+                                  },
 //                        modifier = Modifier.align(Alignment.CenterHorizontally)
 //                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
