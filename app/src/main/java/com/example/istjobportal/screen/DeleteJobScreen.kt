@@ -26,7 +26,7 @@ fun DeleteJobScreen(navController: NavHostController, jobId: String) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.White), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.Gray), horizontalAlignment = Alignment.CenterHorizontally) {
         Button(onClick = { navController.navigate("${Screens.DashboardScreen.route}/admin") { popUpTo(Screens.DashboardScreen.route) { inclusive = true } } }) {
             Text("Go Back")
         }
