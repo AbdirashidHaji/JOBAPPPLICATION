@@ -155,7 +155,7 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
                     .addOnCompleteListener { isLoading = false }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading // Disable button while loading
+            enabled = !isLoading
         ) {
             Text("Update Job")
         }
