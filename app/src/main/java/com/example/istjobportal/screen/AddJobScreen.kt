@@ -43,7 +43,7 @@ fun AddJobScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(Color.White),
+            .background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Go Back Button
@@ -106,15 +106,14 @@ fun AddJobScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Show CircularProgressIndicator when loading
+
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.padding(16.dp))
         }
 
         Button(
             onClick = {
-                isLoading = true // Start loading
-
+                isLoading = true
                 // Create a new job entry
                 val job = hashMapOf(
                     "title" to title,
@@ -122,7 +121,7 @@ fun AddJobScreen(navController: NavHostController) {
                     "company" to company,
                     "startDate" to startDate,
                     "expiryDate" to expiryDate,
-                    "vacancies" to (vacancies.toIntOrNull() ?: 0) // Convert to Int, default to 0 if null
+                    "vacancies" to (vacancies.toIntOrNull() ?: 0)
                 )
 
                 // Add the job to Firestore
@@ -138,11 +137,11 @@ fun AddJobScreen(navController: NavHostController) {
                         Toast.makeText(context, "Failed to add job: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                     .addOnCompleteListener {
-                        isLoading = false // Stop loading
+                        isLoading = false
                     }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading // Disable button while loading
+            enabled = !isLoading
         ) {
             Text("Add Job")
         }

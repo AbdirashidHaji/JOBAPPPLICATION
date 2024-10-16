@@ -59,7 +59,7 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.White),
+        modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(onClick = { navController.navigate("${Screens.DashboardScreen.route}/admin") { popUpTo(Screens.DashboardScreen.route) { inclusive = true } } }) {
