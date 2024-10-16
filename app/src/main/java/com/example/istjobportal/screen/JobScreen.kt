@@ -37,7 +37,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun JobScreen(navController: NavController) {
     val context = LocalContext.current
     val jobs = remember { mutableStateListOf<Map<String, Any>>() } // Mutable list to hold jobs
-    var isLoading by remember { mutableStateOf(true) } // Loading state
+    var isLoading by remember { mutableStateOf(true) }
 
     // Firestore instance
     val db = FirebaseFirestore.getInstance()
@@ -50,7 +50,7 @@ fun JobScreen(navController: NavController) {
                 jobs.clear()
                 for (document in result) {
                     val jobData = document.data.toMutableMap()
-                    jobData["id"] = document.id // Add document ID to the job data
+                    jobData["id"] = document.id
                     jobs.add(jobData)
                 }
                 isLoading = false

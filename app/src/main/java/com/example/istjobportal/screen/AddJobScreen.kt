@@ -33,8 +33,8 @@ fun AddJobScreen(navController: NavHostController) {
     var startDate by remember { mutableStateOf("") }
     var expiryDate by remember { mutableStateOf("") }
     var vacancies by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) } // Loading state
-    val context = LocalContext.current // Get the context once
+    var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Firestore instance
     val db = FirebaseFirestore.getInstance()
