@@ -61,11 +61,14 @@ fun NavGraph(navController: NavHostController) {
         }
 
         // Delete Job Screen
-        composable(route = Screens.DeleteJobScreen.route,
-            arguments = listOf(navArgument("jobId") {type = NavType.StringType})
-            ) {backStackEntry ->
-            val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
-            DeleteJobScreen(navController = navController,jobId)
+//        composable(route = Screens.DeleteJobScreen.route,
+//            arguments = listOf(navArgument("jobId") {type = NavType.StringType})
+//            ) {backStackEntry ->
+//            val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
+//            DeleteJobScreen(navController = navController,jobId)
+//        }
+        composable(route = Screens.DeleteJobScreen.route){
+            DeleteJobScreen(navController = navController)
         }
         //job listings alumni
         composable(route = Screens.JobScreen.route){
