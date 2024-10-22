@@ -46,15 +46,6 @@ fun AddJobScreen(navController: NavHostController) {
             .background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Go Back Button
-        Button(onClick = {
-            navController.navigate(Screens.DashboardScreen.route) {
-                popUpTo(Screens.DashboardScreen.route) { inclusive = true }
-            }
-        }) {
-            Text("Go Back")
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(text = "Add Job", style = MaterialTheme.typography.headlineMedium)
@@ -87,14 +78,14 @@ fun AddJobScreen(navController: NavHostController) {
         OutlinedTextField(
             value = startDate,
             onValueChange = { startDate = it },
-            label = { Text("Start Date (e.g., 01/01/2024)") }
+            label = { Text("Start Date") }
         )
 
         // Expiry Date Input
         OutlinedTextField(
             value = expiryDate,
             onValueChange = { expiryDate = it },
-            label = { Text("Expiry Date (e.g., 01/31/2024)") }
+            label = { Text("Expiry Date") }
         )
 
         // Vacancies Input

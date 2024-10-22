@@ -2,13 +2,18 @@ package com.example.istjobportal.screen
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -26,12 +31,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.istjobportal.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun JobListScreen(navController: NavController) {
     val context = LocalContext.current
-    val jobs = remember { mutableStateListOf<Map<String, Any>>() } // Mutable list to hold jobs
+    val jobs = remember { mutableStateListOf<Map<String, Any>>() }
     var isLoading by remember { mutableStateOf(true) }
 
     // Firestore instance
@@ -91,6 +97,32 @@ fun JobListItem(navController: NavController, job: Map<String, Any>) {
             Text(text = "Vacancies: ${job["vacancies"]}", style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                // Edit Button
+                Button(
+                    onClick = {
+                        navController.navigate("${Screens.EditJobScreen.route}${job["id"]}")
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Edit")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                // Delete Button
+                Button(
+                    onClick = {
+                        navController.navigate("${Screens.DeleteJobScreen.route}${job["id"]}")
+                    },
+                    modifier = Modifier.weight(1f),
+                ) {
+                    Text(text = "Delete")
+                }
+
+            }
+
+
         }
     }
 }
+

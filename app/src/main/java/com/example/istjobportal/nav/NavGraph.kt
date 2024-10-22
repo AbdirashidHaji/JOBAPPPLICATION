@@ -53,11 +53,14 @@ fun NavGraph(navController: NavHostController) {
         }
 
         // Edit Job Screen
-        composable(route = Screens.EditJobScreen.route,
-            arguments = listOf(navArgument("jobId") {type = NavType.StringType})
-            ) {backStackEntry ->
-            val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
-            EditJobScreen(navController = navController,jobId)
+//        composable(route = Screens.EditJobScreen.route,
+//            arguments = listOf(navArgument("jobId") {type = NavType.StringType})
+//            ) {backStackEntry ->
+//            val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
+//            EditJobScreen(navController = navController,jobId)
+//        }
+        composable(route = Screens.EditJobScreen.route){
+            EditJobScreen(navController = navController)
         }
 
         // Delete Job Screen

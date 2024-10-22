@@ -64,19 +64,7 @@ fun DashboardScreen(
                     icon = Icons.Default.Add,
                     onClick = { navController.navigate(Screens.AddJobScreen.route) }
                 )
-                DashboardCard(
-                    title = "Edit Job Listing",
-                    description = "Modify existing job listings.",
-                    icon = Icons.Default.Edit,
-                    onClick = { navController.navigate(Screens.EditJobScreen.route) }
-                )
-                DashboardCard(
-                    title = "Delete Job Listing",
-                    description = "Remove outdated job listings.",
-                    icon = Icons.Default.Delete,
-                    onClick = { navController.navigate(Screens.DeleteJobScreen.route) }
-                )
-                // New card for viewing job listings
+           // New card for viewing job listings
                 DashboardCard(
                     title = "View Job Listings",
                     description = "Browse all job listings.",

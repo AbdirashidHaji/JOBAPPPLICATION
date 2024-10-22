@@ -32,7 +32,7 @@ import com.example.istjobportal.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun EditJobScreen(navController: NavHostController, jobId: String) {
+fun EditJobScreen(navController: NavHostController) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var company by remember { mutableStateOf("") }
@@ -43,11 +43,12 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
 
-    // Fetch job data from Firestore
-    LaunchedEffect(jobId) {
-        db.collection("jobs").document(jobId).get()
-            .addOnSuccessListener { document ->
-                if (document != null) {
+    // Fetch the first job details from Firestore when the screen is displayed
+    LaunchedEffect(Unit) {
+        db.collection("jobs").limit(1).get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val document = querySnapshot.documents[0]
                     title = document.getString("title") ?: ""
                     description = document.getString("description") ?: ""
                     company = document.getString("company") ?: ""
@@ -56,80 +57,77 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
                     vacancies = document.getLong("vacancies")?.toString() ?: ""
                 }
             }
+            .addOnFailureListener { e ->
+                Toast.makeText(context, "Failed to load job: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp).background(Color.Gray),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { navController.navigate("${Screens.DashboardScreen.route}/admin") { popUpTo(Screens.DashboardScreen.route) { inclusive = true } } }) {
+        Button(onClick = {
+            navController.navigate(Screens.DashboardScreen.route) {
+                popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+            }
+        }) {
             Text("Go Back")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+
         Text(text = "Edit Job", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Job Title Input
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
-            label = { Text("Job Title") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Job Title") }
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Job Description Input
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
             label = { Text("Job Description") },
-            modifier = Modifier.height(100.dp).fillMaxWidth()
+            modifier = Modifier.height(100.dp)
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Company Input
         OutlinedTextField(
             value = company,
             onValueChange = { company = it },
-            label = { Text("Company") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Company") }
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Start Date Input
         OutlinedTextField(
             value = startDate,
             onValueChange = { startDate = it },
-            label = { Text("Start Date (e.g., 01/01/2024)") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Start Date (e.g., 01/01/2024)") }
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Expiry Date Input
         OutlinedTextField(
             value = expiryDate,
             onValueChange = { expiryDate = it },
-            label = { Text("Expiry Date (e.g., 01/31/2024)") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Expiry Date (e.g., 01/31/2024)") }
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         // Vacancies Input
         OutlinedTextField(
             value = vacancies,
             onValueChange = { vacancies = it },
-            label = { Text("Number of Vacancies") },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text("Number of Vacancies") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Show CircularProgressIndicator when loading
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.padding(16.dp))
         }
@@ -137,6 +135,7 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
         Button(
             onClick = {
                 isLoading = true
+                // Update job entry
                 val jobUpdates = hashMapOf(
                     "title" to title,
                     "description" to description,
@@ -144,15 +143,32 @@ fun EditJobScreen(navController: NavHostController, jobId: String) {
                     "startDate" to startDate,
                     "expiryDate" to expiryDate,
                     "vacancies" to (vacancies.toIntOrNull() ?: 0)
-                )
-                db.collection("jobs").document(jobId)
-                    .set(jobUpdates)
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
-                        navController.navigate("${Screens.DashboardScreen.route}/admin") { popUpTo(Screens.DashboardScreen.route) { inclusive = true } }
+                ) as MutableMap<String, Any>
+
+                // Update the first job in Firestore
+                db.collection("jobs").limit(1).get()
+                    .addOnSuccessListener { querySnapshot ->
+                        if (!querySnapshot.isEmpty) {
+                            val documentId = querySnapshot.documents[0].id
+                            db.collection("jobs").document(documentId)
+                                .update(jobUpdates)
+                                .addOnSuccessListener {
+                                    Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
+                                    navController.navigate("${Screens.DashboardScreen.route}/admin") {
+                                        popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    Toast.makeText(context, "Failed to update job: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        }
                     }
-                    .addOnFailureListener { e -> Toast.makeText(context, "Failed to update job: ${e.message}", Toast.LENGTH_SHORT).show() }
-                    .addOnCompleteListener { isLoading = false }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Failed to load job for update: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnCompleteListener {
+                        isLoading = false
+                    }
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = !isLoading

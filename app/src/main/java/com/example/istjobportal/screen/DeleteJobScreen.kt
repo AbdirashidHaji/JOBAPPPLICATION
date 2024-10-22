@@ -1,5 +1,6 @@
 package com.example.istjobportal.screen
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -29,12 +30,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun DeleteJobScreen(navController: NavHostController) {
-    var jobId by remember { mutableStateOf("") }
+    var jobTitle by remember { mutableStateOf("") } // Assuming you're using job title for deletion
     var isLoading by remember { mutableStateOf(false) }
     var isDeleted by remember { mutableStateOf(false) }
     val context = LocalContext.current
-
-    // Firestore instance
     val db = FirebaseFirestore.getInstance()
 
     Column(
@@ -45,13 +44,13 @@ fun DeleteJobScreen(navController: NavHostController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Go Back Button
-        Button(onClick = {
-            navController.navigate("${Screens.DashboardScreen.route}/admin") {
-                popUpTo(Screens.DashboardScreen.route) { inclusive = true }
-            }
-        }) {
-            Text("Go Back")
-        }
+//        Button(onClick = {
+//            navController.navigate("${Screens.DashboardScreen.route}/admin") {
+//                popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+//            }
+//        }) {
+//            Text("Go Back")
+//        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -59,11 +58,14 @@ fun DeleteJobScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Job ID Input
+        // Job Title Input
         OutlinedTextField(
-            value = jobId,
-            onValueChange = { jobId = it },
-            label = { Text("Job ID") }
+            value = jobTitle,
+            onValueChange = {
+                jobTitle = it
+                if (it.isNotEmpty()) isDeleted = false // Reset deletion state
+            },
+            label = { Text("Job Title") }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -74,20 +76,45 @@ fun DeleteJobScreen(navController: NavHostController) {
 
         Button(
             onClick = {
+                // Validate the job title
+                if (jobTitle.isBlank()) {
+                    Toast.makeText(context, "Please enter a Job Title", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+
                 isLoading = true
+                Log.d("DeleteJobScreen", "Attempting to delete job with title: $jobTitle")
 
                 // Delete the job from Firestore
-                db.collection("jobs").document(jobId)
-                    .delete()
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
-                        isDeleted = true
-                        jobId = "" // Clear the job ID input
+                db.collection("jobs")
+                    .whereEqualTo("title", jobTitle)
+                    .get()
+                    .addOnSuccessListener { documents ->
+                        if (documents.isEmpty) {
+                            Toast.makeText(context, "No job found with that title", Toast.LENGTH_SHORT).show()
+                            isLoading = false
+                        } else {
+                            // Loop through each document and delete
+                            for (document in documents) {
+                                db.collection("jobs").document(document.id)
+                                    .delete()
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
+                                        navController.navigate("${Screens.DashboardScreen.route}/admin") {
+                                            popUpTo(Screens.DashboardScreen.route) { inclusive = true }
+                                        }
+                                        isDeleted = true
+                                        jobTitle = ""
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Toast.makeText(context, "Failed to delete job: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                            }
+                            isLoading = false
+                        }
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to delete job: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnCompleteListener {
+                        Toast.makeText(context, "Error fetching jobs: ${e.message}", Toast.LENGTH_SHORT).show()
                         isLoading = false
                     }
             },
