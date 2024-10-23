@@ -13,17 +13,26 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import com.example.istjobportal.nav.Screens
 import com.google.firebase.auth.FirebaseAuth
+import android.app.DatePickerDialog
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
 
 @Composable
 fun AddJobScreen(navController: NavHostController) {
@@ -38,6 +47,31 @@ fun AddJobScreen(navController: NavHostController) {
 
     // Firestore instance
     val db = FirebaseFirestore.getInstance()
+
+    // for picking the dates
+    val calendar = Calendar.getInstance()
+
+    //  Start Date
+    val startDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            startDate = "$dayOfMonth/${month + 1}/$year"
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // Expiry Date
+    val expiryDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            expiryDate = "$dayOfMonth/${month + 1}/$year"
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     Column(
         modifier = Modifier
@@ -77,15 +111,23 @@ fun AddJobScreen(navController: NavHostController) {
         // Start Date Input
         OutlinedTextField(
             value = startDate,
-            onValueChange = { startDate = it },
-            label = { Text("Start Date") }
+            onValueChange = { },
+            label = { Text("Start Date") },
+            modifier = Modifier
+                .clickable { startDatePickerDialog.show() }
+                .fillMaxWidth(),
+            enabled = false
         )
 
         // Expiry Date Input
         OutlinedTextField(
             value = expiryDate,
-            onValueChange = { expiryDate = it },
-            label = { Text("Expiry Date") }
+            onValueChange = { },
+            label = { Text("Expiry Date") },
+            modifier = Modifier
+                .clickable { expiryDatePickerDialog.show() }
+                .fillMaxWidth(),
+            enabled = false
         )
 
         // Vacancies Input
@@ -96,7 +138,6 @@ fun AddJobScreen(navController: NavHostController) {
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.padding(16.dp))

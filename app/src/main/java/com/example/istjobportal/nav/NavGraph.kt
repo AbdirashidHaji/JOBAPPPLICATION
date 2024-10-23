@@ -17,6 +17,7 @@ import com.example.istjobportal.screen.DeleteJobScreen
 import com.example.istjobportal.screen.EditJobScreen
 import com.example.istjobportal.screen.DisplayApplicationScreen
 import com.example.istjobportal.screen.EditProfileScreen
+import com.example.istjobportal.screen.ForgotPasswordScreen
 import com.example.istjobportal.screen.LoginScreen
 import com.example.istjobportal.screen.SignupScreen
 import com.example.istjobportal.screen.ViewProfileScreen
@@ -37,7 +38,10 @@ fun NavGraph(navController: NavHostController) {
         composable(route = Screens.SignupScreen.route) {
             SignupScreen(navController = navController)
         }
-
+        //Forgot password
+        composable(route = Screens.ForgotPasswordScreen.route){
+            ForgotPasswordScreen(navController = navController)
+        }
         // Dashboard Screen with role parameter
         composable(
             route = "${Screens.DashboardScreen.route}/{role}",
@@ -52,21 +56,6 @@ fun NavGraph(navController: NavHostController) {
             AddJobScreen(navController = navController)
         }
 
-        // Edit Job Screen
-//        composable(route = Screens.EditJobScreen.route,
-//            arguments = listOf(navArgument("jobId") {type = NavType.StringType})
-//            ) {backStackEntry ->
-//            val jobId = backStackEntry.arguments?.getString("jobId") ?: ""
-//            EditJobScreen(navController = navController,jobId)
-//        }
-        composable(route = Screens.EditJobScreen.route){
-            EditJobScreen(navController = navController)
-        }
-
-        // Delete Job Screen
-        composable(route = Screens.DeleteJobScreen.route){
-            DeleteJobScreen(navController = navController)
-        }
         //job listings alumni
         composable(route = Screens.JobScreen.route){
             JobScreen(navController = navController)

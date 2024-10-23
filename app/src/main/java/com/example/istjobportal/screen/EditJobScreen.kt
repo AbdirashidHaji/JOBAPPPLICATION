@@ -1,6 +1,5 @@
 package com.example.istjobportal.screen
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,26 +12,27 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import android.app.DatePickerDialog
+import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.istjobportal.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
 
 @Composable
-fun EditJobScreen(navController: NavHostController) {
+fun EditJobScreen(navController: NavHostController, jobId: String) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var company by remember { mutableStateOf("") }
@@ -43,18 +43,42 @@ fun EditJobScreen(navController: NavHostController) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
 
-    // Fetch the first job details from Firestore when the screen is displayed
-    LaunchedEffect(Unit) {
-        db.collection("jobs").limit(1).get()
-            .addOnSuccessListener { querySnapshot ->
-                if (!querySnapshot.isEmpty) {
-                    val document = querySnapshot.documents[0]
-                    title = document.getString("title") ?: ""
-                    description = document.getString("description") ?: ""
-                    company = document.getString("company") ?: ""
-                    startDate = document.getString("startDate") ?: ""
-                    expiryDate = document.getString("expiryDate") ?: ""
-                    vacancies = document.getLong("vacancies")?.toString() ?: ""
+    // Calendar instances for picking the dates
+    val calendar = Calendar.getInstance()
+
+    // DatePickerDialog for Start Date
+    val startDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            startDate = "$dayOfMonth/${month + 1}/$year" // Set selected date
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // DatePickerDialog for Expiry Date
+    val expiryDatePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+            expiryDate = "$dayOfMonth/${month + 1}/$year" // Set selected date
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // Fetch job details by jobId from Firestore when the screen is displayed
+    LaunchedEffect(jobId) {
+        db.collection("jobs").document(jobId).get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    title = documentSnapshot.getString("title") ?: ""
+                    description = documentSnapshot.getString("description") ?: ""
+                    company = documentSnapshot.getString("company") ?: ""
+                    startDate = documentSnapshot.getString("startDate") ?: ""
+                    expiryDate = documentSnapshot.getString("expiryDate") ?: ""
+                    vacancies = documentSnapshot.getLong("vacancies")?.toString() ?: ""
                 }
             }
             .addOnFailureListener { e ->
@@ -105,18 +129,26 @@ fun EditJobScreen(navController: NavHostController) {
             label = { Text("Company") }
         )
 
-        // Start Date Input
+        // Start Date Input (Click to open DatePickerDialog)
         OutlinedTextField(
             value = startDate,
-            onValueChange = { startDate = it },
-            label = { Text("Start Date (e.g., 01/01/2024)") }
+            onValueChange = { },
+            label = { Text("Start Date") },
+            modifier = Modifier
+                .clickable { startDatePickerDialog.show() }
+                .fillMaxWidth(),
+            enabled = false // Prevent typing, but allow click to trigger DatePicker
         )
 
-        // Expiry Date Input
+        // Expiry Date Input (Click to open DatePickerDialog)
         OutlinedTextField(
             value = expiryDate,
-            onValueChange = { expiryDate = it },
-            label = { Text("Expiry Date (e.g., 01/31/2024)") }
+            onValueChange = { },
+            label = { Text("Expiry Date") },
+            modifier = Modifier
+                .clickable { expiryDatePickerDialog.show() }
+                .fillMaxWidth(),
+            enabled = false // Prevent typing, but allow click to trigger DatePicker
         )
 
         // Vacancies Input
@@ -145,26 +177,17 @@ fun EditJobScreen(navController: NavHostController) {
                     "vacancies" to (vacancies.toIntOrNull() ?: 0)
                 ) as MutableMap<String, Any>
 
-                // Update the first job in Firestore
-                db.collection("jobs").limit(1).get()
-                    .addOnSuccessListener { querySnapshot ->
-                        if (!querySnapshot.isEmpty) {
-                            val documentId = querySnapshot.documents[0].id
-                            db.collection("jobs").document(documentId)
-                                .update(jobUpdates)
-                                .addOnSuccessListener {
-                                    Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
-                                    navController.navigate("${Screens.DashboardScreen.route}/admin") {
-                                        popUpTo(Screens.DashboardScreen.route) { inclusive = true }
-                                    }
-                                }
-                                .addOnFailureListener { e ->
-                                    Toast.makeText(context, "Failed to update job: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
+                // Update the job in Firestore by jobId
+                db.collection("jobs").document(jobId)
+                    .update(jobUpdates)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
+                        navController.navigate("${Screens.DashboardScreen.route}/admin") {
+                            popUpTo(Screens.DashboardScreen.route) { inclusive = true }
                         }
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(context, "Failed to load job for update: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to update job: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                     .addOnCompleteListener {
                         isLoading = false

@@ -9,8 +9,6 @@ sealed class Screens(val route: String){
 
     //jobs
     data object AddJobScreen : Screens("add_job")
-    data object EditJobScreen : Screens("edit_job/{jobId}")
-    data object DeleteJobScreen : Screens("delete_job/{jobId}")
     data object ApplicationScreen : Screens("Application_Screen")
     data object DisplayApplicationScreen : Screens("Display_Application")
     data object JobScreen : Screens("Job_Screen")

@@ -12,12 +12,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,7 +80,10 @@ fun JobListScreen(navController: NavController) {
         } else {
             LazyColumn {
                 items(jobs) { job ->
-                    JobListItem(navController = navController, job = job)
+                    JobListItem(navController = navController, job = job) { deletedJobId ->
+                        // Remove the job from the list after deletion
+                        jobs.removeAll { it["id"] == deletedJobId }
+                    }
                 }
             }
         }
@@ -86,7 +91,11 @@ fun JobListScreen(navController: NavController) {
 }
 
 @Composable
-fun JobListItem(navController: NavController, job: Map<String, Any>) {
+fun JobListItem(navController: NavController, job: Map<String, Any>, onJobDeleted: (String) -> Unit) {
+    val context = LocalContext.current
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+
     Card(modifier = Modifier.padding(8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = job["title"] as String, style = MaterialTheme.typography.titleMedium)
@@ -98,31 +107,136 @@ fun JobListItem(navController: NavController, job: Map<String, Any>) {
 
             Spacer(modifier = Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                // Edit Button
-                Button(
-                    onClick = {
-                        navController.navigate("${Screens.EditJobScreen.route}${job["id"]}")
-                    },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(text = "Edit")
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
                 // Delete Button
                 Button(
-                    onClick = {
-                        navController.navigate("${Screens.DeleteJobScreen.route}${job["id"]}")
-                    },
+                    onClick = { showDeleteConfirmationDialog = true },
                     modifier = Modifier.weight(1f),
                 ) {
                     Text(text = "Delete")
                 }
 
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Update Button
+                Button(
+                    onClick = {
+                        showUpdateDialog = true
+                    },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Update")
+                }
             }
 
+            // Confirmation dialog for deletion
+            if (showDeleteConfirmationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteConfirmationDialog = false },
+                    title = { Text(text = "Confirm Deletion") },
+                    text = { Text("Are you sure you want to delete this job?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                val db = FirebaseFirestore.getInstance()
+                                val jobId = job["id"] as String
 
+                                // Delete the job from Firestore
+                                db.collection("jobs").document(jobId)
+                                    .delete()
+                                    .addOnSuccessListener {
+                                        Toast.makeText(context, "Job deleted successfully", Toast.LENGTH_SHORT).show()
+                                        onJobDeleted(jobId)  // Remove job from the list
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Toast.makeText(context, "Failed to delete job: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+
+                                showDeleteConfirmationDialog = false // Close confirmation dialog
+                            }
+                        ) {
+                            Text("Yes")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showDeleteConfirmationDialog = false }) {
+                            Text("No")
+                        }
+                    }
+                )
+            }
+
+            if (showUpdateDialog) {
+                showUpdateDialog(job) {
+                    showUpdateDialog = false // Close dialog when done
+                }
+            }
         }
     }
 }
 
+@Composable
+fun showUpdateDialog(job: Map<String, Any>, onDismiss: () -> Unit) {
+    val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
+    val jobId = job["id"] as String
+
+    var title by remember { mutableStateOf(job["title"] as String) }
+    var company by remember { mutableStateOf(job["company"] as String) }
+    var description by remember { mutableStateOf(job["description"] as String) }
+
+    // Update Dialog
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Update Job")
+        },
+        text = {
+            Column {
+                TextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Job Title") }
+                )
+                TextField(
+                    value = company,
+                    onValueChange = { company = it },
+                    label = { Text("Company") }
+                )
+                TextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") }
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    // Update the job in Firestore
+                    val updatedJob = hashMapOf(
+                        "title" to title,
+                        "company" to company,
+                        "description" to description
+                    )
+
+                    db.collection("jobs").document(jobId)
+                        .update(updatedJob as Map<String, Any>)
+                        .addOnSuccessListener {
+                            Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
+                            onDismiss()  // Close the dialog
+                        }
+                        .addOnFailureListener { e ->
+                            Toast.makeText(context, "Failed to update job: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            ) {
+                Text("Update")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancel")
+            }
+        }
+    )
+}

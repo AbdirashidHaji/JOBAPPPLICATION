@@ -64,7 +64,7 @@ fun DashboardScreen(
                     icon = Icons.Default.Add,
                     onClick = { navController.navigate(Screens.AddJobScreen.route) }
                 )
-           // New card for viewing job listings
+           // job listings
                 DashboardCard(
                     title = "View Job Listings",
                     description = "Browse all job listings.",
@@ -104,7 +104,7 @@ fun DashboardScreen(
                     onClick = { navController.navigate(Screens.JobScreen.route) }
                 )
                 DashboardCard(
-                    title = "View Your Profile",
+                    title = "Manage Your Profile",
                     description = "Check your current profile.",
                     icon = Icons.Default.Person,
                     onClick = { navController.navigate(Screens.ViewProfileScreen.route) }
