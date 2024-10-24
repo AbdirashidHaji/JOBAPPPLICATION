@@ -62,7 +62,7 @@ fun JobListScreen(navController: NavController) {
                 jobList = jobList.filterNot { it["id"] == deletedJobId }
             }
         }
-    }d
+    }
 }
 
 @Composable
