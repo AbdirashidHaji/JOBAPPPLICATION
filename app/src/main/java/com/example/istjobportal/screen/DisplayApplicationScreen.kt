@@ -121,7 +121,7 @@ fun ApplicationItem(application: Map<String, Any>, onActionClick: (String, Strin
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Resume and Cover Letter URLs (if available)
+            // Resume and Cover Letter URLs
             application["resumeUrl"]?.let {
                 Text(text = "Resume: $it", style = MaterialTheme.typography.bodyMedium)
             }
@@ -141,8 +141,8 @@ fun ApplicationItem(application: Map<String, Any>, onActionClick: (String, Strin
                 }
 
                 Button(onClick = {
-                    showFeedbackInput = !showFeedbackInput // Toggle feedback input visibility
-                    if (showFeedbackInput) feedback = "" // Clear feedback when opening input
+                    showFeedbackInput = !showFeedbackInput
+                    if (showFeedbackInput) feedback = ""
                 }) {
                     Text("Reject")
                 }
@@ -169,7 +169,7 @@ private fun handleApplicationAction(
     action: String,
     feedback: String?,
     context: Context,
-    navController: NavHostController // Pass navController as a parameter
+    navController: NavHostController
 ) {
     when (action) {
         "approve" -> {
