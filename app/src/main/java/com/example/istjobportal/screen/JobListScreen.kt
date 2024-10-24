@@ -14,80 +14,55 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import android.util.Log
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
-import com.example.istjobportal.nav.Screens
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 @Composable
 fun JobListScreen(navController: NavController) {
     val context = LocalContext.current
-    val jobs = remember { mutableStateListOf<Map<String, Any>>() }
-    var isLoading by remember { mutableStateOf(true) }
-
-    // Firestore instance
     val db = FirebaseFirestore.getInstance()
+    var jobList by remember { mutableStateOf(listOf<Map<String, Any>>()) }
 
     // Fetch jobs from Firestore
     LaunchedEffect(Unit) {
         db.collection("jobs")
             .get()
             .addOnSuccessListener { result ->
-                jobs.clear()
-                for (document in result) {
-                    val jobData = document.data.toMutableMap()
-                    jobData["id"] = document.id
-                    jobs.add(jobData)
+                jobList = result.documents.mapNotNull { document ->
+                    val data = document.data ?: return@mapNotNull null
+                    data + ("id" to document.id)  // Add the document ID to the data
                 }
-                isLoading = false
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Failed to load jobs: ${e.message}", Toast.LENGTH_SHORT).show()
-                isLoading = false
+                Toast.makeText(context, "Failed to fetch jobs: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .background(Color.White),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "Available Jobs", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-        } else {
-            LazyColumn {
-                items(jobs) { job ->
-                    JobListItem(navController = navController, job = job) { deletedJobId ->
-                        // Remove the job from the list after deletion
-                        jobs.removeAll { it["id"] == deletedJobId }
-                    }
-                }
+    // LazyColumn to display list of jobs
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        items(jobList) { job ->
+            JobListItem(navController, job) { deletedJobId ->
+                jobList = jobList.filterNot { it["id"] == deletedJobId }
             }
         }
-    }
+    }d
 }
 
 @Composable
@@ -98,14 +73,15 @@ fun JobListItem(navController: NavController, job: Map<String, Any>, onJobDelete
 
     Card(modifier = Modifier.padding(8.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = job["title"] as String, style = MaterialTheme.typography.titleMedium)
-            Text(text = "Company: ${job["company"]}", style = MaterialTheme.typography.titleMedium)
-            Text(text = "Description: ${job["description"]}", style = MaterialTheme.typography.titleMedium)
-            Text(text = "Start Date: ${job["startDate"]}", style = MaterialTheme.typography.titleSmall)
-            Text(text = "Expiry Date: ${job["expiryDate"]}", style = MaterialTheme.typography.titleSmall)
-            Text(text = "Vacancies: ${job["vacancies"]}", style = MaterialTheme.typography.titleMedium)
+            Text(text = job["title"] as String, style = MaterialTheme.typography.headlineMedium)
+            Text(text = "Company: ${job["company"]}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Description: ${job["description"]}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Start Date: ${job["startDate"]}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Expiry Date: ${job["expiryDate"]}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Vacancies: ${job["vacancies"]}", style = MaterialTheme.typography.bodyMedium)
 
             Spacer(modifier = Modifier.height(8.dp))
+
             Row(horizontalArrangement = Arrangement.SpaceBetween) {
                 // Delete Button
                 Button(
@@ -119,9 +95,7 @@ fun JobListItem(navController: NavController, job: Map<String, Any>, onJobDelete
 
                 // Update Button
                 Button(
-                    onClick = {
-                        showUpdateDialog = true
-                    },
+                    onClick = { showUpdateDialog = true },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(text = "Update")
@@ -165,8 +139,9 @@ fun JobListItem(navController: NavController, job: Map<String, Any>, onJobDelete
                 )
             }
 
+            // Update Dialog
             if (showUpdateDialog) {
-                showUpdateDialog(job) {
+                ShowUpdateDialog(job) {
                     showUpdateDialog = false // Close dialog when done
                 }
             }
@@ -175,14 +150,18 @@ fun JobListItem(navController: NavController, job: Map<String, Any>, onJobDelete
 }
 
 @Composable
-fun showUpdateDialog(job: Map<String, Any>, onDismiss: () -> Unit) {
+fun ShowUpdateDialog(job: Map<String, Any>, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val db = FirebaseFirestore.getInstance()
     val jobId = job["id"] as String
 
+    // Mutable states for all job fields
     var title by remember { mutableStateOf(job["title"] as String) }
     var company by remember { mutableStateOf(job["company"] as String) }
     var description by remember { mutableStateOf(job["description"] as String) }
+    var startDate by remember { mutableStateOf(job["startDate"] as String) }
+    var expiryDate by remember { mutableStateOf(job["expiryDate"] as String) }
+    var vacancies by remember { mutableStateOf(job["vacancies"].toString()) }
 
     // Update Dialog
     AlertDialog(
@@ -207,20 +186,48 @@ fun showUpdateDialog(job: Map<String, Any>, onDismiss: () -> Unit) {
                     onValueChange = { description = it },
                     label = { Text("Description") }
                 )
+                TextField(
+                    value = startDate,
+                    onValueChange = { startDate = it },
+                    label = { Text("Start Date (YYYY-MM-DD)") }
+                )
+                TextField(
+                    value = expiryDate,
+                    onValueChange = { expiryDate = it },
+                    label = { Text("Expiry Date (YYYY-MM-DD)") }
+                )
+                TextField(
+                    value = vacancies,
+                    onValueChange = { vacancies = it },
+                    label = { Text("Vacancies") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
+                    // Ensure the vacancies field is valid
+                    val vacanciesInt = vacancies.toIntOrNull()
+                    if (vacanciesInt == null) {
+                        Toast.makeText(context, "Please enter a valid number of vacancies", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
                     // Update the job in Firestore
                     val updatedJob = hashMapOf(
                         "title" to title,
                         "company" to company,
-                        "description" to description
+                        "description" to description,
+                        "startDate" to startDate,
+                        "expiryDate" to expiryDate,
+                        "vacancies" to vacanciesInt
                     )
 
+                    Log.d("JobUpdate", "Updating job with ID: $jobId and data: $updatedJob")
+
                     db.collection("jobs").document(jobId)
-                        .update(updatedJob as Map<String, Any>)
+                        .set(updatedJob as Map<String, Any>, SetOptions.merge())
                         .addOnSuccessListener {
                             Toast.makeText(context, "Job updated successfully", Toast.LENGTH_SHORT).show()
                             onDismiss()  // Close the dialog
