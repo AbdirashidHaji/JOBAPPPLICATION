@@ -43,7 +43,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun DisplayApplicationScreen(navController: NavHostController) {
     val context = LocalContext.current
     val applications = remember { mutableStateListOf<Map<String, Any>>() } // Mutable list to hold applications
-    var isLoading by remember { mutableStateOf(true) } // Loading state
+    var isLoading by remember { mutableStateOf(true) }
 
     // Firestore instance
     val db = FirebaseFirestore.getInstance()
@@ -57,7 +57,7 @@ fun DisplayApplicationScreen(navController: NavHostController) {
                 applications.clear()
                 for (document in result) {
                     val applicationData = document.data.toMutableMap()
-                    applicationData["id"] = document.id // Add document ID to the application data
+                    applicationData["id"] = document.id
                     applications.add(applicationData)
                 }
                 isLoading = false
