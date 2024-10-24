@@ -27,7 +27,7 @@ import com.example.istjobportal.screen.ViewProfilesScreen
 fun NavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = Screens.LoginScreen.route
+        startDestination = Screens.SignupScreen.route
     ) {
         // Login Screen
         composable(route = Screens.LoginScreen.route) {
