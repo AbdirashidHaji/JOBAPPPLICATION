@@ -45,7 +45,6 @@ import com.google.firebase.storage.FirebaseStorage
 fun CreateProfileScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
-    var profilePhotoUri by remember { mutableStateOf<Uri?>(null) }
     var phone by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var skills by remember { mutableStateOf("") }
@@ -57,14 +56,6 @@ fun CreateProfileScreen(navController: NavController) {
 
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
-    val storageRef = FirebaseStorage.getInstance().reference
-
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri: Uri? ->
-            profilePhotoUri = uri
-        }
-    )
 
     val context = LocalContext.current
     val scrollState = rememberScrollState()
@@ -211,81 +202,29 @@ fun CreateProfileScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { step = 5 },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Next")
-                }
-            }
-
-            5 -> {
-                Text("Step 5: Upload Profile Photo", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { launcher.launch("image/*") },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Select Profile Photo")
-                }
-
-                profilePhotoUri?.let {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Image(
-                        painter = rememberAsyncImagePainter(it),
-                        contentDescription = "Profile Photo",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .border(2.dp, Color.Gray, CircleShape)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
                     onClick = {
-                        profilePhotoUri?.let { uri ->
-                            val photoRef = storageRef.child("profilePhotos/${auth.currentUser!!.uid}.jpg")
-                            val uploadTask = photoRef.putFile(uri)
-
-                            uploadTask.continueWithTask { task ->
-                                if (!task.isSuccessful) {
-                                    task.exception?.let { throw it }
-                                }
-                                photoRef.downloadUrl
-                            }.addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    val downloadUri = task.result
-                                    val profile = hashMapOf(
-                                        "name" to name,
-                                        "bio" to bio,
-                                        "profilePhotoUri" to downloadUri.toString(),
-                                        "phone" to phone,
-                                        "location" to location,
-                                        "skills" to skills.split(",").map { it.trim() },
-                                        "linkedin" to linkedin,
-                                        "courses" to courses.split(",").map { it.trim() },
-                                        "graduationYear" to graduationYear,
-                                        "currentJob" to currentJob,
-                                        "experiences" to experiences,
-                                        "userId" to auth.currentUser?.uid
-                                    )
-                                    db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
-                                        .addOnSuccessListener {
-                                            Toast.makeText(context, "Profile created successfully", Toast.LENGTH_SHORT).show()
-                                            // Navigate to the dashboard screen after successful profile creation
-                                            navController.navigate(Screens.DashboardScreen.route + "/alumni")
-
-                                        }
-                                        .addOnFailureListener { e ->
-                                            Toast.makeText(context, "Failed to create profile: ${e.message}", Toast.LENGTH_SHORT).show()
-                                        }
-                                } else {
-                                    Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
-                                }
+                        val profile = hashMapOf(
+                            "name" to name,
+                            "bio" to bio,
+                            "phone" to phone,
+                            "location" to location,
+                            "skills" to skills.split(",").map { it.trim() },
+                            "linkedin" to linkedin,
+                            "courses" to courses.split(",").map { it.trim() },
+                            "graduationYear" to graduationYear,
+                            "currentJob" to currentJob,
+                            "experiences" to experiences,
+                            "userId" to auth.currentUser?.uid
+                        )
+                        db.collection("alumniProfiles").document(auth.currentUser!!.uid).set(profile)
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Profile created successfully", Toast.LENGTH_SHORT).show()
+                                // Navigate to the dashboard screen after successful profile creation
+                                navController.navigate(Screens.DashboardScreen.route + "/alumni")
                             }
-                        }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Failed to create profile: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
